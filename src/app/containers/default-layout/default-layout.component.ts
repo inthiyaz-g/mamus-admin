@@ -42,7 +42,8 @@ export class DefaultLayoutComponent implements AfterViewInit, OnDestroy {
   private subscriptions = new Subscription();
   private expressOrderPoll?: ReturnType<typeof setInterval>;
   private orderAlarm?: HTMLAudioElement;
-  private orderAlarmUnlocked = false;
+  private printOrderAlarm?: HTMLAudioElement;
+  orderAlarmUnlocked = false;
 
   public perfectScrollbarConfig = {
     suppressScrollX: true,
@@ -66,7 +67,7 @@ export class DefaultLayoutComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.prepareOrderAlarm();
+    this.prepareOrderAlarms();
     this.subscriptions.add(
       this.realtime.activeUserCount$.subscribe((count) => {
         this.activeUserCount = count;
@@ -87,12 +88,11 @@ export class DefaultLayoutComponent implements AfterViewInit, OnDestroy {
     );
     this.realtime.connect();
     this.loadPendingExpressOrders();
-    // Pusher is the immediate path. This small safety net prevents an open
-    // Admin session from missing an Instant order if a private-channel auth
-    // request is briefly interrupted.
+    // Pusher is the immediate path. This lightweight safety net restores a
+    // missed Instant order if a private-channel connection is interrupted.
     this.expressOrderPoll = setInterval(
       () => this.loadPendingExpressOrders(),
-      3000,
+      5 * 60 * 1000,
     );
   }
 
@@ -102,6 +102,7 @@ export class DefaultLayoutComponent implements AfterViewInit, OnDestroy {
       clearInterval(this.expressOrderPoll);
     }
     this.stopOrderAlarm();
+    this.stopPrintOrderAlarm();
     this.realtime.disconnect();
   }
 
@@ -111,25 +112,30 @@ export class DefaultLayoutComponent implements AfterViewInit, OnDestroy {
   @HostListener("document:pointerdown")
   @HostListener("document:keydown")
   unlockOrderAlarm() {
-    if (this.orderAlarmUnlocked || !this.orderAlarm) {
+    if (this.orderAlarmUnlocked || !this.orderAlarm || !this.printOrderAlarm) {
       return;
     }
 
-    this.orderAlarm.muted = true;
-    this.orderAlarm
-      .play()
+    const alarms = [this.orderAlarm, this.printOrderAlarm];
+    alarms.forEach((alarm) => (alarm.muted = true));
+    Promise.all(alarms.map((alarm) => alarm.play()))
       .then(() => {
-        this.orderAlarm!.pause();
-        this.orderAlarm!.currentTime = 0;
-        this.orderAlarm!.muted = false;
+        alarms.forEach((alarm) => {
+          alarm.pause();
+          alarm.currentTime = 0;
+          alarm.muted = false;
+        });
         this.orderAlarmUnlocked = true;
 
         if (this.activeExpressOrder) {
           this.startOrderAlarm();
         }
+        if (this.activeNewOrder) {
+          this.startPrintOrderAlarm();
+        }
       })
       .catch((error) => {
-        this.orderAlarm!.muted = false;
+        alarms.forEach((alarm) => (alarm.muted = false));
         console.warn("Order alarm is waiting for an Admin interaction", error);
       });
   }
@@ -179,6 +185,7 @@ export class DefaultLayoutComponent implements AfterViewInit, OnDestroy {
                 : "Print order rejected",
             ),
           );
+          this.stopPrintOrderAlarm();
           this.dismissNewOrder();
         },
         (error) => {
@@ -282,6 +289,7 @@ export class DefaultLayoutComponent implements AfterViewInit, OnDestroy {
 
     this.activeNewOrder = this.newOrderQueue.shift();
     this.newOrderModal.show();
+    this.startPrintOrderAlarm();
   }
 
   private loadPendingExpressOrders() {
@@ -329,15 +337,18 @@ export class DefaultLayoutComponent implements AfterViewInit, OnDestroy {
     this.startOrderAlarm();
   }
 
-  private prepareOrderAlarm() {
+  private prepareOrderAlarms() {
     this.orderAlarm = new Audio("assets/sounds/order-alarm.wav");
     this.orderAlarm.loop = true;
     this.orderAlarm.preload = "auto";
+    this.printOrderAlarm = new Audio("assets/sounds/print-order.wav");
+    this.printOrderAlarm.loop = true;
+    this.printOrderAlarm.preload = "auto";
   }
 
   private startOrderAlarm() {
     if (!this.orderAlarm) {
-      this.prepareOrderAlarm();
+      this.prepareOrderAlarms();
     }
 
     if (!this.orderAlarmUnlocked) {
@@ -357,5 +368,29 @@ export class DefaultLayoutComponent implements AfterViewInit, OnDestroy {
 
     this.orderAlarm.pause();
     this.orderAlarm.currentTime = 0;
+  }
+
+  private startPrintOrderAlarm() {
+    if (!this.printOrderAlarm) {
+      this.prepareOrderAlarms();
+    }
+
+    if (!this.orderAlarmUnlocked) {
+      return;
+    }
+
+    this.printOrderAlarm!.currentTime = 0;
+    this.printOrderAlarm!.play().catch((error) => {
+      console.warn("Print-order alarm could not start", error);
+    });
+  }
+
+  private stopPrintOrderAlarm() {
+    if (!this.printOrderAlarm) {
+      return;
+    }
+
+    this.printOrderAlarm.pause();
+    this.printOrderAlarm.currentTime = 0;
   }
 }

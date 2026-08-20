@@ -1,0 +1,267 @@
+<!-- 
+  Authors : initappz (Rahul Jograna)
+  Website : https://initappz.com/
+  App Name : Grocery Delivery App Ionic7 Capacitor
+  This App Template Source code is licensed as per the
+  terms found in the Website https://initappz.com/license
+  Copyright and Good Faith Purchasers © 2024-present initappz.
+-->
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card-body">
+                                <div class="back_image"
+                                    [style.backgroundImage]="'url('+ getImage() +'),url(assets/img/dummy.jpeg)'">
+                                </div>
+                                <p class="head"><b> {{util.translate('Basic Informations')}} </b> </p>
+
+                                <div class="row">
+                                    <div class="col-6">
+                                        <p class="sub"><b>{{util.translate('Name')}} : </b></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p class="values"> {{name}} </p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-6">
+                                        <p class="sub"><b>{{util.translate('Email')}} : </b></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p class="values"> {{email}} </p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-6">
+                                        <p class="sub"><b>{{util.translate('Contact No')}} : </b></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p class="values"> {{phone}} </p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-4 b-r-default text-center">
+                                        <p class="text-muted">{{util.translate('Orders')}} </p>
+                                        <span>{{orders.length}}</span>
+                                    </div>
+                                    <div class="col-4 b-r-default text-center">
+                                        <p class="text-muted">{{util.translate('Address')}} </p>
+                                        <span>{{address.length}}</span>
+                                    </div>
+                                    <div class="col-4 b-r-default text-center">
+                                        <p class="text-muted">{{util.translate('Reviews')}} </p>
+                                        <span>{{ratings.length}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+
+                            <div class="card-body">
+                                <tabset>
+                                    <tab>
+                                        <ng-template tabHeading><i class="icon-basket"></i> {{util.translate('Orders')}}
+                                        </ng-template>
+                                        <div class="orders">
+                                            <div style="height: 70vh;overflow: scroll;padding: 10px;">
+                                                <p *ngIf="!orders?.length" class="ion-text-center">
+                                                    {{util.translate('No New Orders Found')}}
+                                                </p>
+                                                <div class="card_div" *ngFor="let item of orders"
+                                                    (click)="goToOrder(item)">
+
+                                                    <div class="image_div">
+                                                        <img [src]="api.imageUrl+ item.orders[0].cover"
+                                                            onError="this.src='assets/imgs/user.png'">
+                                                    </div>
+                                                    <div class="desc_div">
+                                                        <p style="font-family: 'bold';color: gray;font-size: 12px;">
+                                                            {{util.translate('ORDER')}}
+                                                            #{{item.id}}
+                                                        </p>
+                                                        <div *ngIf="item.orders?.length" class="border_bottom">
+                                                            <p *ngFor="let order of item.orders;let ol = index"
+                                                                class="items">
+                                                                <span *ngIf="order.size == 0 ">{{order.name}} -
+                                                                    <span *ngIf="order.have_gram == 1"> {{order.gram}}
+                                                                        {{util.translate('grams')}} </span>
+                                                                    <span *ngIf="order.have_kg == 1"> {{order.kg}}
+                                                                        {{util.translate('kg')}} </span>
+                                                                    <span *ngIf="order.have_liter ==1"> {{order.liter}}
+                                                                        {{util.translate('ltr')}} </span>
+                                                                    <span *ngIf="order.have_ml ==1"> {{order.ml}}
+                                                                        {{util.translate('ml')}} </span>
+                                                                    <span *ngIf="order.have_pcs == 1"> {{order.pcs}}
+                                                                        {{util.translate('pcs')}} </span>
+
+                                                                    <span *ngIf="util.cside =='left'">
+                                                                        {{util.currecny}} {{order.discount ==0 ?
+                                                                        order.original_price :
+                                                                        order.sell_price}}
+                                                                    </span>
+                                                                    <span *ngIf="util.cside =='right'">
+                                                                        {{order.discount ==0 ? order.original_price :
+                                                                        order.sell_price}}
+                                                                        {{util.currecny}}
+                                                                    </span>
+
+                                                                </span>
+                                                                <span *ngIf="order.size == 1">
+                                                                    {{order.name}} - <span>
+                                                                        {{order.variations[0].items[order.variant].title}}
+                                                                    </span>
+                                                                    <span *ngIf="util.cside =='left'">
+                                                                        {{util.currecny}} {{order.discount ==0 ?
+                                                                        order.original_price :
+                                                                        order.sell_price}}
+                                                                    </span>
+                                                                    <span *ngIf="util.cside =='right'">
+                                                                        {{order.discount ==0 ? order.original_price :
+                                                                        order.sell_price}}
+                                                                        {{util.currecny}}
+                                                                    </span>
+                                                                </span>
+                                                                <span>X {{order.quantiy}}</span>
+
+                                                            </p>
+
+                                                        </div>
+                                                        <p class="datetime">{{ item.date_time}}</p>
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </tab>
+
+                                    <tab>
+                                        <ng-template tabHeading><i class="icon-location-pin"></i>
+                                            {{util.translate('Address')}}
+                                        </ng-template>
+                                        <div class="address">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th> {{util.translate('Id')}}</th>
+                                                        <th> {{util.translate('Title')}}</th>
+                                                        <th> {{util.translate('Address')}} </th>
+                                                        <th> {{util.translate('House')}} </th>
+                                                        <th> {{util.translate('Landmark')}} </th>
+                                                        <th> {{util.translate('Pincode')}} </th>
+                                                        <th> {{util.translate('Actions')}} </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+
+                                                    <tr *ngFor="let item of address">
+                                                        <td> {{item.id}} </td>
+                                                        <td>
+                                                            {{item.title}}
+                                                        </td>
+
+                                                        <td>
+                                                            {{item.address}}
+                                                        </td>
+
+                                                        <td>
+                                                            {{item.house}}
+                                                        </td>
+
+                                                        <td>
+                                                            {{item.landmark}}
+                                                        </td>
+
+                                                        <td>
+                                                            {{item.pincode}}
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge badge-danger"
+                                                                (click)="deleteAddress(item)">
+                                                                {{util.translate('Delete')}} </span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </tab>
+
+                                    <tab>
+                                        <ng-template tabHeading><i class="icon-star"></i> {{util.translate('Reviews')}}
+                                        </ng-template>
+                                        <div class="reviews">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>{{util.translate('Id')}} </th>
+                                                        <th>{{util.translate('From')}} </th>
+                                                        <th>{{util.translate('On')}} </th>
+                                                        <th>{{util.translate('Rating')}} </th>
+                                                        <th>{{util.translate('Comment')}} </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+
+                                                    <tr *ngFor="let item of ratings ">
+                                                        <td>{{item.id}}</td>
+                                                        <td>{{item.way}}</td>
+
+                                                        <td>
+                                                            <div>
+                                                                <span
+                                                                    *ngIf="item && item.sid && item.sid !=0 && item.storeInfo">
+                                                                    {{item.storeInfo.name}}
+                                                                </span>
+
+                                                                <span
+                                                                    *ngIf="item && item.did && item.did !=0 && item.driverInfo">
+                                                                    {{item.driverInfo.first_name +' ' +
+                                                                    item.driverInfo.last_name}}
+                                                                </span>
+
+                                                                <span
+                                                                    *ngIf="item && item.pid && item.pid !=0 && item.productInfo">
+                                                                    {{item.productInfo.name}}
+                                                                </span>
+
+                                                            </div>
+                                                            <div class="small text-muted">
+                                                                <span
+                                                                    *ngIf="item && item.sid && item.sid !=0 && item.storeInfo">{{util.translate('Store')}}
+                                                                </span>
+                                                                <span
+                                                                    *ngIf="item && item.did && item.did !=0 && item.driverInfo">{{util.translate('Driver')}}
+                                                                </span>
+                                                                <span
+                                                                    *ngIf="item && item.pid && item.pid !=0 && item.productInfo">{{util.translate('Products')}}
+                                                                </span> |
+                                                                {{util.translate('Saved on:')}}
+                                                                {{getDate(item.timestamp)}}
+                                                            </div>
+                                                        </td>
+                                                        <td> {{item.rate}} / 5 </td>
+                                                        <td> <span style="white-space: pre-line;width: 100px;">
+                                                                {{item.msg}} </span></td>
+                                                    </tr>
+
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </tab>
+                                </tabset>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

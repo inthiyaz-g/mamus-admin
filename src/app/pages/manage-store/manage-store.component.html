@@ -1,0 +1,596 @@
+<!-- 
+  Authors : initappz (Rahul Jograna)
+  Website : https://initappz.com/
+  App Name : Grocery Delivery App Ionic7 Capacitor
+  This App Template Source code is licensed as per the
+  terms found in the Website https://initappz.com/license
+  Copyright and Good Faith Purchasers © 2024-present initappz.
+-->
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    {{util.translate('Store Informations')}}
+                </div>
+                <div class="card-body">
+                    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                        <button aria-controls="navbarSupportedContent" (click)="isCollapsed = !isCollapsed"
+                            [attr.aria-expanded]="!isCollapsed" class="navbar-toggler" type="button"
+                            aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent" [collapse]="isCollapsed"
+                            [isAnimated]="true">
+                            <ul class="navbar-nav mr-auto">
+                                <li class="nav-item" [class]="tabId == 1 ? 'active':''" (click)="changeView(1)">
+                                    <a class="nav-link">{{util.translate('Orders')}} <span class="sr-only"
+                                            *ngIf="tabId == 1">{{util.translate("(current)")}}</span></a>
+                                </li>
+
+                                <li class="nav-item" [class]="tabId == 2 ? 'active':''" (click)="changeView(2)">
+                                    <a class="nav-link">{{util.translate('Analytics')}} <span class="sr-only"
+                                            *ngIf="tabId == 2">{{util.translate("(current)")}}</span></a>
+                                </li>
+
+                                <li class="nav-item" [class]="tabId == 3 ? 'active':''" (click)="changeView(3)">
+                                    <a class="nav-link">{{util.translate('Reviews')}} <span class="sr-only"
+                                            *ngIf="tabId == 3">{{util.translate("(current)")}}</span></a>
+                                </li>
+
+                                <li class="nav-item" [class]="tabId == 4 ? 'active':''" (click)="changeView(4)">
+                                    <a class="nav-link">{{util.translate('Products')}} <span class="sr-only"
+                                            *ngIf="tabId == 4">{{util.translate("(current)")}}</span></a>
+                                </li>
+
+                            </ul>
+
+                        </div>
+                    </nav>
+
+
+                </div>
+                <div class="card-body orders" *ngIf="tabId == 1">
+                    <div>
+                        <p *ngIf="!dummyOrders?.length && !newOrders?.length" class="ion-text-center">
+                            {{util.translate('No New Orders Found')}}
+                        </p>
+                        <div class="card_div"
+                            *ngFor="let item of newOrders | paginate: { id: 'server', itemsPerPage: 10, currentPage: orderPage, totalItems: storeTotalOrders }"
+                            (click)="goToOrder(item)">
+                            <div class="image_div">
+                                <img [src]="api.imageUrl+ item.orders[0].cover"
+                                    onError="this.src='assets/imgs/user.png'">
+                            </div>
+                            <div class="desc_div">
+                                <p style="font-family: 'bold';color: gray;font-size: 12px;">
+                                    {{util.translate('ORDER')}}
+                                    #{{item.id}}
+                                </p>
+                                <div *ngIf="item.orders?.length" class="border_bottom">
+                                    <p *ngFor="let order of item.orders;let ol = index" class="items">
+                                        <span *ngIf="order.size == 0 ">{{order.name}} -
+                                            <span *ngIf="order.have_gram == 1"> {{order.gram}}
+                                                {{util.translate('grams')}} </span>
+                                            <span *ngIf="order.have_kg == 1"> {{order.kg}}
+                                                {{util.translate('kg')}} </span>
+                                            <span *ngIf="order.have_liter ==1"> {{order.liter}}
+                                                {{util.translate('ltr')}} </span>
+                                            <span *ngIf="order.have_ml ==1"> {{order.ml}}
+                                                {{util.translate('ml')}} </span>
+                                            <span *ngIf="order.have_pcs == 1"> {{order.pcs}}
+                                                {{util.translate('pcs')}} </span>
+
+                                            <span *ngIf="util.cside =='left'">
+                                                {{util.currecny}} {{order.discount ==0 ? order.original_price :
+                                                order.sell_price}}
+                                            </span>
+                                            <span *ngIf="util.cside =='right'">
+                                                {{order.discount ==0 ? order.original_price : order.sell_price}}
+                                                {{util.currecny}}
+                                            </span>
+
+                                        </span>
+                                        <span *ngIf="order.size == 1">
+                                            {{order.name}} - <span>
+                                                {{order.variations[0].items[order.variant].title}} </span>
+                                            <span *ngIf="util.cside =='left'">
+                                                {{util.currecny}} {{order.discount ==0 ? order.original_price :
+                                                order.sell_price}}
+                                            </span>
+                                            <span *ngIf="util.cside =='right'">
+                                                {{order.discount ==0 ? order.original_price : order.sell_price}}
+                                                {{util.currecny}}
+                                            </span>
+                                        </span>
+                                        <span>X {{order.quantiy}}</span>
+
+                                    </p>
+
+                                </div>
+                                <p class="datetime">{{ item.date_time}}</p>
+                            </div>
+                            <div class="status" style="background: #f86c6b !important;">
+                                {{util.translate(item.storeStatus)}}
+                            </div>
+                        </div>
+
+                        <div *ngIf="newOrders?.length > 0">
+                            <pagination-controls id="server" (pageChange)="pageChange($event)"></pagination-controls>
+                        </div>
+
+                        <div class="card_div_skel" *ngFor="let item of dummyOrders">
+                            <div *ngFor="let item of [1,2,3,4,5]" style="width: 100%;">
+                                <ngx-skeleton-loader count="1" appearance="line" style="width: 100%;height: 10px;">
+                                </ngx-skeleton-loader>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body anaylics" *ngIf="tabId == 2">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="main_content_div">
+
+                                <div class="content_div">
+                                    <div class="title_flex">
+                                        <p class="title_lbl">{{util.translate('Delivered Orders')}} </p>
+                                    </div>
+
+                                    <div class="slide_div">
+                                        <div style="border-bottom: 1px solid white;">
+                                            <p class="simp_lbl">{{util.translate('Today')}} : {{todayStates.label}} </p>
+                                            <p class="bold_lbl">
+                                                <span *ngIf="util.cside =='left'">
+                                                    {{util.currecny}} {{todayStates.total}}
+                                                </span>
+                                                <span *ngIf="util.cside =='right'">
+                                                    {{todayStates.total}} {{util.currecny}}
+                                                </span>
+                                            </p>
+                                            <p class="simp_lbl"> {{todayStates.totalSold}}
+                                                {{util.translate('Items Sold')}} </p>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-6" style="padding: 0px;">
+                                                <div style="border-right: 1px solid white;">
+                                                    <p class="simp_lbl">{{util.translate('This Week')}} :
+                                                        {{weeekStates.label}} </p>
+                                                    <p class="bold_lbl">
+                                                        <span *ngIf="util.cside =='left'">
+                                                            {{util.currecny}} {{weeekStates.total}}
+                                                        </span>
+                                                        <span *ngIf="util.cside =='right'">
+                                                            {{weeekStates.total}} {{util.currecny}}
+                                                        </span>
+                                                    </p>
+                                                    <p class="simp_lbl">{{weeekStates.totalSold}}
+                                                        {{util.translate('Orders')}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-6" style="padding: 0px;">
+                                                <div>
+                                                    <p class="simp_lbl">{{util.translate('This Month')}}
+                                                        :{{monthStats.label}}</p>
+                                                    <p class="bold_lbl">
+                                                        <span *ngIf="util.cside =='left'">
+                                                            {{util.currecny}} {{monthStats.total}}
+                                                        </span>
+                                                        <span *ngIf="util.cside =='right'">
+                                                            {{monthStats.total}} {{util.currecny}}
+                                                        </span>
+                                                    </p>
+                                                    <p class="simp_lbl">{{monthStats.totalSold}}
+                                                        {{util.translate('Orders')}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="blue_div">
+                                        <p class="bold_lbl">{{util.translate('Get more orders from')}} {{util.appName}}
+                                        </p>
+                                        <p class="small_lbl">
+                                            {{util.translate("Items with images lead to more orders compared to items
+                                            without them. Check your competitor item prices")}}
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                <div class="content_div">
+                                    <div class="title_flex" style="margin-bottom: 0px;">
+                                        <p class="title_lbl">{{util.translate('Rejected Orders')}} </p>
+
+                                    </div>
+                                    <p class="span_lbl">
+                                        {{util.translate('Lost sales from orders rejected by you or cancelled')}}
+                                    </p>
+                                    <div class="border_slider_div">
+                                        <div style="border-bottom: 1px solid lightgrey;">
+                                            <p class="simp_lbl">{{util.translate('Today')}} : {{todayStates.label}} </p>
+                                            <p class="bold_lbl">
+                                                <span *ngIf="util.cside =='left'">
+                                                    {{util.currecny}} {{todayStatesRejected.total}}
+                                                </span>
+                                                <span *ngIf="util.cside =='right'">
+                                                    {{todayStatesRejected.total}} {{util.currecny}}
+                                                </span>
+                                            </p>
+                                            <p class="simp_lbl">{{todayStatesRejected.totalSold}}
+                                                {{util.translate('Orders')}} </p>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-6" style="padding: 0px;">
+                                                <div style="border-right: 1px solid lightgrey;">
+                                                    <p class="simp_lbl">{{util.translate('This Week')}} :
+                                                        {{weeekStates.label}} </p>
+                                                    <p class="bold_lbl">
+                                                        <span *ngIf="util.cside =='left'">
+                                                            {{util.currecny}} {{weeekStatesRejected.total}}
+                                                        </span>
+                                                        <span *ngIf="util.cside =='right'">
+                                                            {{weeekStatesRejected.total}} {{util.currecny}}
+                                                        </span>
+                                                    </p>
+                                                    <p class="simp_lbl">{{weeekStatesRejected.totalSold}}
+                                                        {{util.translate('Orders')}} </p>
+                                                </div>
+                                            </div>
+                                            <div class="col-6" style="padding: 0px;">
+                                                <div>
+                                                    <p class="simp_lbl">{{util.translate('This Month')}} :
+                                                        {{monthStats.label}}</p>
+                                                    <p class="bold_lbl">
+                                                        <span *ngIf="util.cside =='left'">
+                                                            {{util.currecny}} {{monthStatsRejected.total}}
+                                                        </span>
+                                                        <span *ngIf="util.cside =='right'">
+                                                            {{monthStatsRejected.total}} {{util.currecny}}
+                                                        </span>
+                                                    </p>
+                                                    <p class="simp_lbl">{{monthStatsRejected.totalSold}}
+                                                        {{util.translate('Orders')}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="blue_div">
+                                        <p class="bold_lbl">
+                                            <span
+                                                *ngIf="monthStatsRejected.totalSold <2 || monthStatsRejected.totalSold == 0">
+                                                {{util.translate('Great Work!')}} </span>
+                                            <span *ngIf="monthStatsRejected.totalSold >2">
+                                                {{util.translate('Improve yourself')}}
+                                            </span>
+                                        </p>
+                                        <p class="small_lbl">
+                                            <span
+                                                *ngIf="monthStatsRejected.totalSold <2 || monthStatsRejected.totalSold == 0">
+                                                {{util.translate("You have accepted all orders till now in this
+                                                month")}}
+                                            </span>
+                                            <span *ngIf="monthStatsRejected.totalSold >2">
+                                                {{util.translate("You have some rejected and cancelled orders on your
+                                                current month's stats, this will impact on your future sells, improve
+                                                your self")}}
+                                            </span>
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                <div class="content_div">
+                                    <div class="title_flex" style="margin-bottom: 0px;">
+                                        <p class="title_lbl">{{util.translate('Customer complaints')}} </p>
+                                    </div>
+                                    <p class="span_lbl">{{util.translate('Details from')}}
+                                        <span> {{monthStats.label}} </span>&nbsp;
+
+                                    </p>
+
+                                    <div class="border_div">
+                                        <div class="inner_content inner_flex" *ngFor="let item of complaints">
+                                            <p class="small_lbl">{{util.translate(reasons[item.reason_id])}}
+                                                <br>
+                                                <span style="font-size: 10px;"> {{item.short_message}} </span>
+                                            </p>
+                                            <p class="small_lbl"> #{{item.order_id}}</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="content_div">
+                                    <div class="title_flex" style="margin-bottom: 0px;">
+                                        <p class="title_lbl">{{util.translate('Top Items in your store')}} </p>
+                                    </div>
+                                    <p class="span_lbl">{{util.translate('Details from')}}
+                                        <span>{{monthStats.label}}</span>&nbsp;
+
+                                    </p>
+
+                                    <div class="row_flex">
+                                        <div class="f_div" style="background: #f6f6f6;">
+                                            <p>{{util.translate('Store Items')}} </p>
+                                        </div>
+
+                                        <div class="l_div" style="background: #f6f6f6;">
+                                            <p>{{util.translate('Quantity Sold')}} </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row_flex" *ngFor="let item of topProducts">
+                                        <div class="f_div">
+                                            <p>{{item.items.name}}</p>
+                                        </div>
+
+                                        <div class="l_div">
+                                            <p>{{item.counts}}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="blue_div" style="margin-top: 20px;">
+                                        <p class="bold_lbl">{{util.translate('Run promotions to get more orders')}} </p>
+                                        <p class="small_lbl">
+                                            {{util.translate("Set campaigns on your own and offer customized discounts
+                                            to give a further boost to your sales.")}}
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="chart_content_div">
+                                <div class="content_div">
+                                    <p class="title_lbl">{{util.translate('Orders Trends')}} </p>
+
+                                    <div class="color_flex">
+                                        <div class="color_div"></div>
+                                        <p>{{util.translate('Total number of orders today')}} </p>
+                                    </div>
+
+                                    <div style="display: block;">
+
+                                        <c-chart type="bar" [data]="barChartDataToday"></c-chart>
+                                    </div>
+
+                                    <div class="color_flex">
+                                        <div class="color_div"></div>
+                                        <p>{{util.translate('Total number of orders this weeks')}} </p>
+                                    </div>
+
+                                    <div style="display: block;">
+
+                                        <c-chart type="bar" [data]="barChartDataWeeks"></c-chart>
+                                    </div>
+
+                                    <div class="color_flex">
+                                        <div class="color_div"></div>
+                                        <p>{{util.translate('Total number of orders this months')}} </p>
+                                    </div>
+
+                                    <div style="display: block;">
+
+                                        <c-chart type="bar" [data]="barChartDataMonths"></c-chart>
+                                    </div>
+
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="chart_content_div">
+                                <div class="content_div">
+                                    <div class="content_div">
+                                        <p class="title_lbl" style="margin-bottom: 0px;">
+                                            {{util.translate("Month's distribution of your orders")}}
+                                        </p>
+                                        <p class="span_lbl">{{util.translate('Details from')}}
+                                            <span>{{monthLabel}}</span>&nbsp;
+
+                                        </p>
+
+                                        <p class="no_lbl">
+                                            {{util.translate('Top Sells this months')}}
+                                        </p>
+
+                                        <div class="chart_flex">
+                                            <div class="color_content" style="width: 50%;">
+
+                                                <div class="color_flex" *ngFor="let item of topProducts;">
+                                                    <div class="color_div"></div>
+                                                    <p> {{item.items.name}} - ({{item.counts}}) </p>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="line_div"></div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-lg-6">
+                            <div class="chart_content_div">
+                                <div class="content_div">
+                                    <div class="card-body">
+                                        <div class="chart-wrapper">
+
+                                            <c-chart type="doughnut" [data]="doughnutChartData"></c-chart>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body" *ngIf="tabId == 3">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>{{util.translate('Id')}} </th>
+                                <th>{{util.translate('From')}} </th>
+                                <th class="text-center"><i class="icon-people"></i></th>
+                                <th>{{util.translate('User')}} </th>
+                                <th>{{util.translate('Rating')}} </th>
+                                <th>{{util.translate('Comment')}} </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of dummyReviews">
+                                <td *ngFor="let item of [1,2,3,4,5,6]">
+                                    <ngx-skeleton-loader count="1" appearance="line"></ngx-skeleton-loader>
+                                </td>
+                            </tr>
+                            <tr
+                                *ngFor="let item of reviews | paginate: {id:'pagin1', itemsPerPage: 10, currentPage: pageReviews }">
+                                <td>{{item.id}}</td>
+                                <td>{{item.way}}</td>
+                                <td class="text-center">
+                                    <div class="avatar">
+                                        <img [src]="api.imageUrl+ item.cover" onError="this.src='assets/imgs/user.png'"
+                                            class="img-avatar" style="height: 30px;width: 30px;">
+                                    </div>
+
+                                </td>
+                                <td>
+                                    <div> {{item.first_name}} {{item.last_name}} </div>
+                                    <div class="small text-muted">
+                                        <span>{{util.translate('New')}} </span> | {{util.translate('Saved on:')}}
+                                        {{getDate(item.timestamp)}}
+                                    </div>
+                                </td>
+                                <td> {{item.rate}} / 5 </td>
+                                <td> <span style="white-space: pre-line;width: 100px;"> {{item.msg}} </span></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                    <div *ngIf="reviews?.length > 0">
+                        <pagination-controls id="pagin1" (pageChange)="pageReviews = $event"></pagination-controls>
+                    </div>
+                </div>
+
+                <div class="card-body" *ngIf="tabId == 4">
+                    <div class="row flex_row">
+                        <div class="col-lg-6">
+                            <input type="text" class="form-control" id="name" [placeholder]="util.translate('Search')"
+                                (input)="onSearchChange($event.target.value)">
+                        </div>
+
+                    </div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>{{util.translate('Id')}} </th>
+                                <th>{{util.translate('Cover')}} </th>
+                                <th (click)="sortByName()" style="cursor: pointer;">{{util.translate('Name')}} &nbsp; <i
+                                        class="fa fa-sort-down fa-lg"></i> </th>
+                                <th>{{util.translate('Price')}} </th>
+                                <th>{{util.translate('In Stock')}} </th>
+                                <th (click)="sortByRating()" style="cursor: pointer;">{{util.translate('Rating')}}
+                                    &nbsp; <i class="fa fa-sort-down fa-lg"></i></th>
+                                <th>{{util.translate('Action')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of dummyLoadProducts">
+                                <td *ngFor="let item of [1,2,3,4,5,6,7]">
+                                    <ngx-skeleton-loader count="1" appearance="line"></ngx-skeleton-loader>
+                                </td>
+                            </tr>
+                            <tr
+                                *ngFor="let item of products | paginate: {id:'pagin1', itemsPerPage: 10, currentPage: pageProducts }">
+                                <td>{{item.id}}</td>
+                                <td class="text-center">
+                                    <div class="avatar">
+                                        <img [src]="api.imageUrl+ item.cover" onError="this.src='assets/imgs/user.png'"
+                                            class="img-avatar" style="height: 30px;width: 30px;">
+                                    </div>
+                                </td>
+                                <td>{{item.name}}</td>
+                                <td>
+                                    <span *ngIf="item.discount == 0">
+
+                                        <span *ngIf="util.cside =='left'">
+                                            {{util.currecny}} {{item.original_price}}
+                                        </span>
+                                        <span *ngIf="util.cside =='right'">
+                                            {{item.original_price}} {{util.currecny}}
+                                        </span>
+                                    </span>
+                                    <span *ngIf="item.discount > 0">
+                                        <span style="text-decoration: line-through;">
+                                            <span *ngIf="util.cside =='left'">
+                                                {{util.currecny}} {{item.original_price}}
+                                            </span>
+                                            <span *ngIf="util.cside =='right'">
+                                                {{item.original_price}} {{util.currecny}}
+                                            </span>
+                                        </span>
+                                        <span style="font-family: 'bold';">
+                                            <span *ngIf="util.cside =='left'">
+                                                {{util.currecny}} {{item.sell_price}}
+                                            </span>
+                                            <span *ngIf="util.cside =='right'">
+                                                {{item.sell_price}} {{util.currecny}}
+                                            </span>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <c-badge color="primary" class="me-1 badge bg-info" *ngIf="item.in_stoke == 1">
+                                        {{util.translate('In Stock')}}
+                                    </c-badge>
+                                    <c-badge color="primary" class="me-1 badge bg-info" *ngIf="item.in_stoke == 0">
+                                        {{util.translate('Out Of Stock')}}
+                                    </c-badge>
+                                </td>
+                                <td>
+                                    <span *ngIf="item.total_rating >0">
+                                        {{item.rating}} / ({{item.total_rating}})
+                                    </span>
+                                    <span *ngIf="item.total_rating == 0">
+                                        {{item.rating}}
+                                    </span>
+                                </td>
+                                <td>
+                                    <c-badge [color]="item.status == 1 ? 'success' :'dark'"
+                                        [class]="item.status == 1 ? 'me-1 badge bg-success' :'me-1 badge bg-dark' "
+                                        (click)="updateStatus(item)">
+                                        {{item.status == 1 ?util.translate('Active'): util.translate('Deactived')}}
+                                    </c-badge>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                    <div *ngIf="products?.length > 0">
+                        <pagination-controls id="pagin1" (pageChange)="page = $event"></pagination-controls>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

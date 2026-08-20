@@ -1,0 +1,248 @@
+<!-- 
+  Authors : initappz (Rahul Jograna)
+  Website : https://initappz.com/
+  App Name : Grocery Delivery App Ionic7 Capacitor
+  This App Template Source code is licensed as per the
+  terms found in the Website https://initappz.com/license
+  Copyright and Good Faith Purchasers © 2024-present initappz.
+-->
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-sm-12 col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    {{util.translate('Offers')}}
+                    <div class="card-header-actions">
+                        <button type="submit" class="btn btn-sm btn-primary" style="float: right;margin: 0px 5px;"
+                            (click)="addNew()">
+                            {{util.translate('Add New')}}
+                        </button> &nbsp;
+                        <button type="submit" (click)="importCSV()" class="btn btn-sm btn-warning"
+                            style="float: right;margin: 0px 5px;">
+                            {{util.translate('Bulk CSV Upload')}}
+                        </button> &nbsp;
+                        <button type="submit" (click)="exportCSV()" class="btn btn-sm btn-success"
+                            style="float: right;margin: 0px 5px;">
+                            {{util.translate('Export as CSV')}}
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th> {{util.translate('Id')}}</th>
+                                <th> {{util.translate('Cover')}}</th>
+                                <th> {{util.translate('Coupon code')}}</th>
+                                <th> {{util.translate('Discount')}} </th>
+                                <th> {{util.translate('Expire')}} </th>
+                                <th> {{util.translate('Short Description')}} </th>
+                                <th> {{util.translate('Min')}} </th>
+                                <th> {{util.translate('Upto')}} </th>
+                                <th> {{util.translate('Manage By')}} </th>
+                                <th> {{util.translate('Actions')}} </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of dummy">
+                                <td *ngFor="let item of [1,2,3,4,5,6,7,8,9,10]">
+                                    <ngx-skeleton-loader animation="progress"></ngx-skeleton-loader>
+                                </td>
+                            </tr>
+                            <tr
+                                *ngFor="let item of list | paginate: {id:'pagin1', itemsPerPage: 10, currentPage: page }">
+                                <td> {{item.id}} </td>
+                                <td>
+                                    <img class="img-responsive" style="height: 30px;width: 30px; object-fit: cover;"
+                                        [src]="api.imageUrl + item.image" onError="this.src='assets/img/dummy.jpeg'">
+                                </td>
+                                <td>
+                                    <label> <span style="font-size: 14px;"> {{item.name}}</span> <br>
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        {{item.off}} <span *ngIf="item.type == 'per'">%</span> <span
+                                            *ngIf="item.type != 'per'">{{util.currecny}}</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        {{getDate(item.date_time)}}
+                                    </label>
+                                </td>
+                                <td>
+                                    <label style="width: 200px;">
+                                        {{item.descriptions}}
+                                    </label>
+                                </td>
+
+                                <td>
+                                    {{item.min}}
+                                </td>
+
+                                <td>
+                                    {{item.upto}}
+                                </td>
+
+                                <td>
+                                    {{util.translate(item && item.manage && item.manage == 1?'Store' :'Admin')}}
+                                </td>
+                                <td>
+                                    <c-badge [color]="item.status == 1 ? 'success' :'dark'"
+                                        [class]="item.status == 1 ? 'me-1 badge bg-success' :'me-1 badge bg-dark' "
+                                        (click)="changeStatus(item)">
+                                        {{item.status == 1 ?util.translate('Active'): util.translate('Deactived')}}
+                                    </c-badge>
+                                    <c-badge color="primary" class="me-1 badge bg-info" (click)="openOffers(item)">
+                                        {{util.translate('View')}}
+                                    </c-badge>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div *ngIf="list?.length > 0">
+                        <pagination-controls id="pagin1" (pageChange)="page = $event"></pagination-controls>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div bsModal #myModal3="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-warning" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{util.translate('Bulk CSV Upload')}} </h5>
+                <button type="button" class="close" (click)="myModal3.hide()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body long_content">
+                <div class="form-group row">
+                    <div class="col-md-12">
+                        <input (change)="uploadCSV($event.target.files)" type="file" id="file-input" name="file-input"
+                            accept=".csv">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-warning" style="float: right;" (click)="downloadSample()">
+                    {{util.translate('Download Sample CSV')}} &nbsp; <i class="fa fa-cloud-download"></i></button>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                    (click)="myModal3.hide()">{{util.translate('Close')}}</button>
+
+                <button type="button" class="btn btn-warning" (click)="saveType()">
+                    {{util.translate('Save Changes')}}</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<div bsModal #myModal2="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-primary modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{util.translate('Manage Offers')}} </h5>
+                <button type="button" class="close" (click)="myModal2.hide()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body long_content">
+                <div class="logoContainer">
+                    <img [src]="api.imageUrl+ cover" onError="this.src='assets/img/dummy.jpeg'">
+                </div>
+                <div class="fileContainer sprite">
+                    <span> {{util.translate('Add Cover')}} </span>
+                    <input (change)="preview_banner($event.target.files)" type="file" value="Choose File">
+                </div>
+                <p class="text-heler">{{util.translate(".jpg, .jpeg, .png, .bmp recommended size (512 X 512) pixels")}}
+                </p>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>{{util.translate('Coupon code')}}</label>
+                            <input type="text" class="form-control" [ngModelOptions]="{standalone: true}"
+                                [(ngModel)]="name" [placeholder]="util.translate('Coupon code')">
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>{{util.translate('Discount')}}</label>
+                            <input type="number" class="form-control" [ngModelOptions]="{standalone: true}"
+                                [(ngModel)]="off" [placeholder]="util.translate('Discount')">
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>{{util.translate('Minimum cart value')}}</label>
+                            <input type="number" class="form-control" [ngModelOptions]="{standalone: true}"
+                                [(ngModel)]="min" [placeholder]="util.translate('Minimum cart value')">
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>{{util.translate('Upto')}}</label>
+                            <input type="number" class="form-control" [ngModelOptions]="{standalone: true}"
+                                [(ngModel)]="upto" [placeholder]="util.translate('Upto')">
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>{{util.translate('Type')}}</label>
+                            <select class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="type">
+                                <option value="per">{{util.translate('%')}} </option>
+                                <option value="flat"> {{util.translate('Flat')}}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{util.translate('Short Description')}}</label>
+                            <textarea type="number" class="form-control" [ngModelOptions]="{standalone: true}"
+                                [(ngModel)]="descriptions" rows="4"
+                                [placeholder]="util.translate('Short Description')"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>{{util.translate('From')}}</label>
+                            <input type="date" class="form-control" [ngModelOptions]="{standalone: true}"
+                                [(ngModel)]="from" [placeholder]="util.translate('From')">
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>{{util.translate('To')}}</label>
+                            <input type="date" class="form-control" [ngModelOptions]="{standalone: true}"
+                                [(ngModel)]="to" [placeholder]="util.translate('To')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                    (click)="myModal2.hide()">{{util.translate('Close')}}</button>
+
+                <button type="button" class="btn btn-primary" *ngIf="action =='create'" (click)="saveChanges()">
+                    {{util.translate('Save Changes')}}</button>
+                <button type="button" class="btn btn-primary" *ngIf="action =='edit'" (click)="updateChanges()">
+                    {{util.translate('Update Changes')}}</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

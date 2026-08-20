@@ -1,0 +1,152 @@
+<!-- 
+  Authors : initappz (Rahul Jograna)
+  Website : https://initappz.com/
+  App Name : Grocery Delivery App Ionic7 Capacitor
+  This App Template Source code is licensed as per the
+  terms found in the Website https://initappz.com/license
+  Copyright and Good Faith Purchasers © 2024-present initappz.
+-->
+<!--sidebar-->
+<c-sidebar #sidebar="cSidebar" class="d-print-none sidebar sidebar-fixed" id="sidebar" visible>
+  <c-sidebar-brand [brandFull]="{
+      src: 'assets/img/brand/big_logo.png',
+      width: 200,
+      height: 46,
+      alt: 'CoreUI Logo'
+    }" [brandNarrow]="{
+      src: 'assets/img/brand/big_logo.png',
+      width: 46,
+      height: 46,
+      alt: 'CoreUI Logo'
+    }" routerLink="./">
+  </c-sidebar-brand>
+  <perfect-scrollbar [config]="perfectScrollbarConfig">
+    <!--  [perfectScrollbar]="perfectScrollbarConfig"-->
+    <c-sidebar-nav [navItems]="navItems">
+    </c-sidebar-nav>
+  </perfect-scrollbar>
+  <c-sidebar-toggler *ngIf="!sidebar.narrow" toggle="unfoldable" cSidebarToggle="sidebar"></c-sidebar-toggler>
+</c-sidebar>
+
+<!--main-->
+<div class="wrapper d-flex flex-column min-vh-100 bg-light dark:bg-transparent">
+  <!--app-header-->
+  <app-default-header class="mb-4 d-print-none header header-sticky" position="sticky" sidebarId="sidebar">
+  </app-default-header>
+  <!--app-body-->
+  <div class="body flex-grow-1 px-3">
+    <c-container breakpoint="lg" class="h-auto">
+      <div class="d-flex justify-content-end mb-2">
+        <span class="badge bg-success p-2" title="Users currently connected to the user app">
+          <i class="fa fa-users mr-1"></i> {{activeUserCount}} {{util.translate('Active users')}}
+        </span>
+      </div>
+      <router-outlet></router-outlet>
+    </c-container>
+  </div>
+  <!--app footer-->
+  <app-default-footer></app-default-footer>
+</div>
+
+<div bsModal #expressOrderModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+  aria-labelledby="express-order-title" aria-hidden="true" [config]="{ backdrop: 'static', keyboard: false }">
+  <div class="modal-dialog modal-dialog-centered" role="document" *ngIf="activeExpressOrder">
+    <div class="modal-content border-primary">
+      <div class="modal-header bg-primary text-white">
+        <div>
+          <small class="text-uppercase font-weight-bold"><i class="fa fa-bolt"></i> {{util.translate('Express order alert')}}</small>
+          <h5 class="modal-title mt-1" id="express-order-title">{{util.translate('Instant Delivery')}} #{{activeExpressOrder.id}}</h5>
+        </div>
+        <button type="button" class="close text-white" (click)="dismissExpressOrder()" [disabled]="expressSaving" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">
+          <strong>{{getCustomerName(activeExpressOrder)}}</strong>
+          <span *ngIf="activeExpressOrder.user?.mobile"> · {{activeExpressOrder.user.mobile}}</span>
+        </p>
+        <div class="row text-center">
+          <div class="col-6 border-right">
+            <small class="d-block text-muted">{{util.translate('Items')}}</small>
+            <strong class="d-block">{{expressItemCount(activeExpressOrder)}}</strong>
+          </div>
+          <div class="col-6">
+            <small class="d-block text-muted">{{util.translate('Amount')}}</small>
+            <strong class="d-block">₹{{formatAmount(activeExpressOrder.grand_total)}}</strong>
+          </div>
+        </div>
+        <div class="alert alert-primary mt-3 mb-0">
+          <strong>{{util.translate('Delivery target')}}:</strong> {{util.translate('10–15 minutes')}} ·
+          {{util.translate('Delivery charge')}} ₹{{formatAmount(activeExpressOrder.delivery_charge)}}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="dismissExpressOrder()" [disabled]="expressSaving">
+          {{util.translate('Review later')}}
+        </button>
+        <button type="button" class="btn btn-danger" (click)="respondToExpressOrder('rejected')" [disabled]="expressSaving">
+          <i class="fa fa-times"></i> {{util.translate('Reject')}}
+        </button>
+        <button type="button" class="btn btn-success" (click)="respondToExpressOrder('accepted')" [disabled]="expressSaving">
+          <i class="fa fa-check"></i> {{util.translate('Accept')}}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div bsModal #newOrderModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+  aria-labelledby="new-order-title" aria-hidden="true" [config]="{ backdrop: 'static', keyboard: false }">
+  <div class="modal-dialog modal-dialog-centered" role="document" *ngIf="activeNewOrder">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <div>
+          <small class="text-primary text-uppercase font-weight-bold"><i class="fa fa-bell"></i> {{util.translate('New print order')}}</small>
+          <h5 class="modal-title mt-1" id="new-order-title">{{util.translate('Print Request')}} #{{activeNewOrder.id}}</h5>
+        </div>
+        <button type="button" class="close" (click)="dismissNewOrder()" [disabled]="notificationSaving" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">
+          <strong>{{getCustomerName(activeNewOrder)}}</strong>
+          <span *ngIf="activeNewOrder.user?.mobile"> · {{activeNewOrder.user.mobile}}</span>
+        </p>
+        <div class="row text-center">
+          <div class="col-6 border-right">
+            <small class="d-block text-muted">{{util.translate('Pages to print')}}</small>
+            <strong class="d-block">{{activeNewOrder.billable_pages || 0}}</strong>
+            <small class="text-muted">{{activeNewOrder.page_count || 0}} {{util.translate('uploaded page(s)')}} × {{activeNewOrder.copies || 1}} {{util.translate('copy/copies')}}</small>
+          </div>
+          <div class="col-6">
+            <small class="d-block text-muted">{{util.translate('Order price')}}</small>
+            <strong class="d-block">₹{{formatAmount(activeNewOrder.amount)}}</strong>
+            <small class="text-muted">₹{{formatAmount(activeNewOrder.price_per_page)}}/{{util.translate('page')}}</small>
+          </div>
+        </div>
+        <div class="bg-light mt-3 p-3 rounded">
+          <small class="d-block text-muted">{{util.translate('Print options')}}</small>
+          <strong>{{activeNewOrder.paper_size}} · {{activeNewOrder.color_mode === 'color' ? util.translate('Colour') : util.translate('Black & white')}}</strong>
+          <small class="d-block text-muted mt-1">{{activeNewOrder.duplex === 'double_sided' ? util.translate('Double-sided') : util.translate('Single-sided')}} · {{activeNewOrder.documents?.length || 0}} {{util.translate('file(s)')}}</small>
+        </div>
+        <div *ngIf="activeNewOrder.notes" class="alert alert-warning mt-3 mb-0">
+          <strong>{{util.translate('Customer instructions')}}</strong>
+          <p class="mb-0 mt-1">{{activeNewOrder.notes}}</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="dismissNewOrder()" [disabled]="notificationSaving">
+          {{util.translate('Review later')}}
+        </button>
+        <button type="button" class="btn btn-danger" (click)="respondToNewOrder('rejected')" [disabled]="notificationSaving">
+          <i class="fa fa-times"></i> {{util.translate('Reject')}}
+        </button>
+        <button type="button" class="btn btn-success" (click)="respondToNewOrder('accepted')" [disabled]="notificationSaving">
+          <i class="fa fa-check"></i> {{util.translate('Accept')}}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

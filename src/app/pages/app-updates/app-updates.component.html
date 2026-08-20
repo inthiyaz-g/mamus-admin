@@ -1,0 +1,78 @@
+<!-- 
+  Authors : initappz (Rahul Jograna)
+  Website : https://initappz.com/
+  App Name : Grocery Delivery App Ionic7 Capacitor
+  This App Template Source code is licensed as per the
+  terms found in the Website https://initappz.com/license
+  Copyright and Good Faith Purchasers © 2024-present initappz.
+-->
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card" *ngFor="let item of app_updates">
+                <div class="card-header">
+                    {{util.translate(item.app_name)}}
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label class="modal_lbl">{{util.translate('App URL PlayStore')}}</label>
+                                <input type="text" [(ngModel)]="item.app_url_playstore" class="form-control"
+                                    [placeholder]="util.translate('https://play.google.com/store/apps/details?id=com.whatsapp')"
+                                    [ngModelOptions]="{standalone: true}">
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label class="modal_lbl">{{util.translate('Android App Version')}}</label>
+                                <input type="text" [(ngModel)]="item.app_version_android" class="form-control"
+                                    [placeholder]="util.translate('Android App Version 0.0.1')"
+                                    [ngModelOptions]="{standalone: true}">
+                            </div>
+                        </div>
+
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label class="modal_lbl">{{util.translate('App URL AppStore')}}</label>
+                                <input type="text" [(ngModel)]="item.app_url_app_store" class="form-control"
+                                    [placeholder]="util.translate('https://apps.apple.com/in/app/whatsapp-messenger/id310633997')"
+                                    [ngModelOptions]="{standalone: true}">
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label class="modal_lbl">{{util.translate('iOS App Version')}}</label>
+                                <input type="text" [(ngModel)]="item.app_version_ios" class="form-control"
+                                    [placeholder]="util.translate('iOS App Version 0.0.1')"
+                                    [ngModelOptions]="{standalone: true}">
+                            </div>
+                        </div>
+
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label class="modal_lbl">{{util.translate('Update Status')}}</label>
+                                <select class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="item.force_update">
+                                    <option [value]="0">{{util.translate('Ignorable')}}</option>
+                                    <option [value]="1">{{util.translate('Force Update')}}</option>
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <button type="button" class="btn btn-success" (click)="save()">
+                        {{util.translate('Submit')}}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

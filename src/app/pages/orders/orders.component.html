@@ -1,0 +1,137 @@
+<!-- 
+  Authors : initappz (Rahul Jograna)
+  Website : https://initappz.com/
+  App Name : Grocery Delivery App Ionic7 Capacitor
+  This App Template Source code is licensed as per the
+  terms found in the Website https://initappz.com/license
+  Copyright and Good Faith Purchasers © 2024-present initappz.
+-->
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    {{util.translate('All Orders')}}
+                    <div class="card-header-actions">
+                        <button type="submit" (click)="importCSV()" class="btn btn-sm btn-warning"
+                            style="float: right;margin: 0px 5px;">
+                            {{util.translate('Bulk CSV Upload')}}
+                        </button> &nbsp;
+                        <button type="submit" (click)="exportCSV()" class="btn btn-sm btn-success"
+                            style="float: right;margin: 0px 5px;">
+                            {{util.translate('Export as CSV')}}
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+
+
+                    <div class="row flex_row">
+                        <div class="col-lg-10">
+                            <input type="number" class="form-control" id="name" [(ngModel)]="inputString"
+                                [placeholder]="util.translate('Search Order By Id')">
+                        </div>
+                        <div class="col-lg-2">
+                            <button type="submit" (click)="search()" class="btn btn-sm btn-dark">
+                                {{util.translate('Search')}}
+                            </button>
+                            <button type="submit" (click)="clean()" class="btn btn-sm btn-light"
+                                style="margin:0px 5px;">
+                                {{util.translate('Clean')}}
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <div *ngIf="!orders?.length && dummy.length == 0" style="text-align: center;">
+                        <p>{{util.translate('No Data Found..')}}</p>
+                    </div>
+
+                    <table class="table table-striped">
+                        <thead *ngIf="orders?.length">
+                            <tr>
+                                <th>{{util.translate('Id')}}</th>
+                                <th>{{util.translate('Username')}}</th>
+                                <th>{{util.translate('Store')}}</th>
+                                <th>{{util.translate('Date')}}</th>
+                                <th>{{util.translate('Total')}}</th>
+                                <th>{{util.translate('Order To')}}</th>
+                                <th>{{util.translate('Action')}}</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            <tr *ngFor="let item of dummy">
+                                <td *ngFor="let item of [1,2,3,4,5,6,7]">
+                                    <ngx-skeleton-loader count="1" appearance="line"></ngx-skeleton-loader>
+                                </td>
+                            </tr>
+                            <tr
+                                *ngFor="let item of orders | paginate: { id: 'server', itemsPerPage: 10, currentPage: page, totalItems: totalOrders }">
+                                <td> {{item.id}} </td>
+                                <td>{{item.first_name}} {{item.last_name}}</td>
+                                <td> <label> <span *ngFor="let store of item.storeInfo;let i = index"> {{store.name}}
+                                            {{i == item.storeInfo.length -1 ? '' : ',&nbsp;' }} </span> </label>
+                                </td>
+                                <td>{{item.date_time}}</td>
+                                <td>
+                                    <span *ngIf="util.cside =='left'">
+                                        {{util.currecny}} {{item.grand_total}}
+                                    </span>
+                                    <span *ngIf="util.cside =='right'">
+                                        {{item.grand_total}} {{util.currecny}}
+                                    </span>
+                                </td>
+                                <td> {{item.order_to}} </td>
+                                <td>
+                                    <c-badge color="info" class="me-1 badge bg-info" (click)="viewsInfo(item.id)">
+                                        {{util.translate('View')}}
+                                    </c-badge>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div *ngIf="orders?.length > 0">
+                        <pagination-controls id="server" (pageChange)="pageChange($event)"></pagination-controls>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div bsModal #myModal3="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-warning" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{util.translate('Bulk CSV Upload')}} </h5>
+                <button type="button" class="close" (click)="myModal3.hide()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body long_content">
+                <div class="form-group row">
+                    <div class="col-md-12">
+                        <input (change)="uploadCSV($event.target.files)" type="file" id="file-input" name="file-input"
+                            accept=".csv">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-warning" style="float: right;" (click)="downloadSample()">
+                    {{util.translate('Download Sample CSV')}} &nbsp; <i class="fa fa-cloud-download"></i></button>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                    (click)="myModal3.hide()">{{util.translate('Close')}}</button>
+
+                <button type="button" class="btn btn-warning" (click)="saveType()">
+                    {{util.translate('Save Changes')}}</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

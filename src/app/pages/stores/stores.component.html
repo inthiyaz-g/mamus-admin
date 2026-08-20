@@ -1,0 +1,989 @@
+<!-- 
+  Authors : initappz (Rahul Jograna)
+  Website : https://initappz.com/
+  App Name : Grocery Delivery App Ionic7 Capacitor
+  This App Template Source code is licensed as per the
+  terms found in the Website https://initappz.com/license
+  Copyright and Good Faith Purchasers © 2024-present initappz.
+-->
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-sm-12 col-md-12">
+      <div class="card">
+        <div class="card-header">
+          {{ util.translate("Stores") }}
+          <div class="card-header-actions">
+            <button
+              type="submit"
+              class="btn btn-sm btn-primary"
+              style="float: right; margin: 0px 5px"
+              (click)="addNew()"
+            >
+              {{ util.translate("Add New") }}
+            </button>
+            &nbsp;
+            <button
+              type="submit"
+              (click)="importCSV()"
+              class="btn btn-sm btn-warning"
+              style="float: right; margin: 0px 5px"
+            >
+              {{ util.translate("Bulk CSV Upload") }}
+            </button>
+            &nbsp;
+            <button
+              type="submit"
+              (click)="exportCSV()"
+              class="btn btn-sm btn-success"
+              style="float: right; margin: 0px 5px"
+            >
+              {{ util.translate("Export as CSV") }}
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row flex_row">
+            <div class="col-lg-8">
+              <input
+                type="text"
+                class="form-control form-control"
+                id="name"
+                [placeholder]="util.translate('Search Stores')"
+                (input)="search($event.target.value)"
+              />
+            </div>
+
+            <div class="col-lg-3">
+              <select
+                id="select2"
+                name="select2"
+                class="form-control form-control"
+                [(ngModel)]="selectedCities"
+                (change)="filter()"
+              >
+                <option [value]="item.id" *ngFor="let item of cities">
+                  {{ item.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-lg-1">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                style="float: right"
+                (click)="clearFilter()"
+              >
+                {{ util.translate("Clear") }}
+              </button>
+            </div>
+          </div>
+
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>{{ util.translate("Cover") }}</th>
+                <th>{{ util.translate("Name") }}</th>
+                <th>{{ util.translate("City") }}</th>
+                <th>{{ util.translate("Owner") }}</th>
+                <th>{{ util.translate("Commission") }}</th>
+                <th>{{ util.translate("Time") }}</th>
+                <th>{{ util.translate("Ratings") }}</th>
+                <th>{{ util.translate("Actions") }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of dummy">
+                <td *ngFor="let item of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]">
+                  <ngx-skeleton-loader
+                    animation="progress"
+                  ></ngx-skeleton-loader>
+                </td>
+              </tr>
+              <tr
+                *ngFor="
+                  let item of list
+                    | paginate
+                      : { id: 'pagin1', itemsPerPage: 10, currentPage: page }
+                "
+              >
+                <td>
+                  <img
+                    class="img-responsive"
+                    style="height: 40px; width: 40px; object-fit: cover"
+                    [src]="api.imageUrl + item.cover"
+                    onError="this.src='assets/img/dummy.jpeg'"
+                  />
+                </td>
+                <td>
+                  <label>
+                    <span style="font-size: 14px"> {{ item.name }}</span> <br />
+                  </label>
+                </td>
+                <td>
+                  <label>
+                    {{ item.city_name }}
+                  </label>
+                </td>
+                <td>
+                  <label>
+                    {{ item.first_name + " " + item.last_name }}
+                  </label>
+                </td>
+                <td>
+                  <label>
+                    {{ item.commission }}
+                  </label>
+                </td>
+
+                <td>
+                  <label>
+                    {{ getTime(item.open_time) }} -
+                    {{ getTime(item.close_time) }}
+                  </label>
+                </td>
+                <td>
+                  <label>
+                    {{ item.rating != null ? item.rating : 0 }} / ({{
+                      item.total_rating != nul ? item.total_rating : 0
+                    }})
+                  </label>
+                </td>
+                <td>
+                  <c-badge
+                    [color]="item.status == 1 ? 'success' : 'dark'"
+                    [class]="
+                      item.status == 1
+                        ? 'me-1 badge bg-success'
+                        : 'me-1 badge bg-dark'
+                    "
+                    (click)="changeStatus(item)"
+                  >
+                    {{
+                      item.status == 1
+                        ? util.translate("Active")
+                        : util.translate("Deactived")
+                    }}
+                  </c-badge>
+                  <c-badge
+                    color="primary"
+                    class="me-1 badge bg-primary"
+                    (click)="editInfo(item)"
+                  >
+                    {{ util.translate("Edit") }}
+                  </c-badge>
+
+                  <c-badge
+                    color="info"
+                    class="me-1 badge bg-info"
+                    (click)="openStore(item)"
+                  >
+                    {{ util.translate("View") }}
+                  </c-badge>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="list?.length > 0">
+            <pagination-controls
+              id="pagin1"
+              (pageChange)="page = $event"
+            ></pagination-controls>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  bsModal
+  #myModal3="bs-modal"
+  class="modal fade"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="myModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-warning" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ util.translate("Bulk CSV Upload") }}</h5>
+        <button
+          type="button"
+          class="close"
+          (click)="myModal3.hide()"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body long_content">
+        <div class="form-group row">
+          <div class="col-md-12">
+            <input
+              (change)="uploadCSV($event.target.files)"
+              type="file"
+              id="file-input"
+              name="file-input"
+              accept=".csv"
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn btn-warning"
+          style="float: right"
+          (click)="downloadSample()"
+        >
+          {{ util.translate("Download Sample CSV") }} &nbsp;
+          <i class="fa fa-cloud-download"></i>
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="myModal3.hide()"
+        >
+          {{ util.translate("Close") }}
+        </button>
+
+        <button type="button" class="btn btn-warning" (click)="saveType()">
+          {{ util.translate("Save Changes") }}
+        </button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<div
+  bsModal
+  #myModal2="bs-modal"
+  class="modal fade"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="myModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-primary modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ util.translate("Manage Stores") }}</h5>
+        <button
+          type="button"
+          class="close"
+          (click)="myModal2.hide()"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body long_content">
+        <div class="logoContainer">
+          <img
+            [src]="api.imageUrl + cover"
+            [class]="submited && cover == '' ? 'req' : ''"
+            onError="this.src='assets/img/dummy.jpeg'"
+          />
+        </div>
+        <div class="fileContainer sprite">
+          <span> {{ util.translate("Add Cover") }} </span>
+          <input
+            (change)="preview_banner($event.target.files)"
+            type="file"
+            value="Choose File"
+          />
+        </div>
+        <p class="text-heler">
+          {{
+            util.translate(
+              ".jpg, .jpeg, .png, .bmp recommended size (512 X 512) pixels"
+            )
+          }}
+        </p>
+        <div class="card">
+          <div class="card-body">
+            <div
+              class="card-header"
+              style="
+                margin: 10px 0px;
+                border: none;
+                text-transform: uppercase;
+                font-family: 'bold';
+              "
+            >
+              {{ util.translate("OWNER DETAILS") }} :
+            </div>
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label>{{ util.translate("First Name") }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [class]="submited && fname == '' ? 'req' : ''"
+                    [ngModelOptions]="{ standalone: true }"
+                    [(ngModel)]="fname"
+                    [placeholder]="util.translate('First Name')"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label>{{ util.translate("Last Name") }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [ngModelOptions]="{ standalone: true }"
+                    [class]="submited && lname == '' ? 'req' : ''"
+                    [(ngModel)]="lname"
+                    [placeholder]="util.translate('Last Name')"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label>{{ util.translate("Email") }}</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    [class]="submited && email == '' ? 'req' : ''"
+                    [ngModelOptions]="{ standalone: true }"
+                    [(ngModel)]="email"
+                    [placeholder]="util.translate('Email')"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label>{{ util.translate("Password") }}</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    [class]="submited && password == '' ? 'req' : ''"
+                    [ngModelOptions]="{ standalone: true }"
+                    [(ngModel)]="password"
+                    [placeholder]="util.translate('Password')"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="row">
+                  <div class="col-sm-4" (click)="openCountryModel()">
+                    <div class="form-group">
+                      <label>{{ util.translate("Country code") }}</label>
+                      <input
+                        type="text"
+                        disabled
+                        class="form-control"
+                        [class]="submited && country_code == '' ? 'req' : ''"
+                        [ngModelOptions]="{ standalone: true }"
+                        [(ngModel)]="displayed"
+                        [placeholder]="util.translate('Country code')"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <div class="form-group">
+                      <label>{{ util.translate("Mobile") }}</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        [ngModelOptions]="{ standalone: true }"
+                        [class]="submited && phone == '' ? 'req' : ''"
+                        [(ngModel)]="phone"
+                        [placeholder]="util.translate('Mobile')"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label>{{ util.translate("Gender") }}</label>
+                  <select
+                    id="select2"
+                    name="select2"
+                    class="form-control"
+                    [(ngModel)]="gender"
+                  >
+                    <option [value]="1">{{ util.translate("Male") }}</option>
+                    <option [value]="0">{{ util.translate("Female") }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="card-header"
+              style="
+                margin: 10px 0px;
+                border: none;
+                text-transform: uppercase;
+                font-family: 'bold';
+              "
+            >
+              {{ util.translate("STORES DETAILS") }} :
+            </div>
+
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="form-group">
+                  <label>{{ util.translate("Store Name") }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [ngModelOptions]="{ standalone: true }"
+                    [(ngModel)]="name"
+                    [class]="submited && name == '' ? 'req' : ''"
+                    [placeholder]="util.translate('Store Name')"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-12">
+                <div class="form-group">
+                  <label>{{ util.translate("Store Address") }}</label>
+                  <textarea
+                    type="text"
+                    [class]="submited && address == '' ? 'req' : ''"
+                    class="form-control"
+                    [ngModelOptions]="{ standalone: true }"
+                    rows="5"
+                    [(ngModel)]="address"
+                    [placeholder]="util.translate('Store Address')"
+                  ></textarea>
+                </div>
+              </div>
+              <div class="col-sm-12">
+                <p class="text-heler">
+                  {{
+                    util.translate("Select Latitude & Longitude From here:")
+                  }}
+                  <a
+                    href="https://www.mapcoordinates.net/en"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style="color: blue !important"
+                    >https://www.mapcoordinates.net/en</a
+                  >
+                </p>
+                <p class="text-heler">
+                  {{
+                    util.translate("Please enter valid Latitude & Longitude")
+                  }}
+                </p>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Latitude")
+                  }}</label>
+                  <input
+                    type="text"
+                    [class]="submited && lat == '' ? 'req' : ''"
+                    [(ngModel)]="lat"
+                    class="form-control"
+                    [placeholder]="util.translate('Latitude')"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Longitude")
+                  }}</label>
+                  <input
+                    type="text"
+                    [class]="submited && lng == '' ? 'req' : ''"
+                    [(ngModel)]="lng"
+                    class="form-control"
+                    [placeholder]="util.translate('Longitude')"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Opening Time")
+                  }}</label>
+                  <input
+                    type="time"
+                    [class]="submited && openTime == '' ? 'req' : ''"
+                    [(ngModel)]="openTime"
+                    class="form-control"
+                    [placeholder]="util.translate('Opening Time')"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Closing Time")
+                  }}</label>
+                  <input
+                    type="time"
+                    [class]="submited && closeTime == '' ? 'req' : ''"
+                    [(ngModel)]="closeTime"
+                    class="form-control"
+                    [placeholder]="util.translate('Closing Time')"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Store Commision %")
+                  }}</label>
+                  <input
+                    type="number"
+                    [class]="submited && commission == '' ? 'req' : ''"
+                    [(ngModel)]="commission"
+                    class="form-control"
+                    [placeholder]="util.translate('Store Commision %')"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-12">
+                <div class="form-group">
+                  <label>{{ util.translate("Store Description") }}</label>
+                  <textarea
+                    type="text"
+                    [class]="submited && descritions == '' ? 'req' : ''"
+                    class="form-control"
+                    [ngModelOptions]="{ standalone: true }"
+                    rows="5"
+                    [(ngModel)]="descritions"
+                    [placeholder]="util.translate('Store Description')"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Select City")
+                  }}</label>
+                  <select
+                    id="select2"
+                    name="select2"
+                    [class]="submited && city == '' ? 'req' : ''"
+                    class="form-control form-control"
+                    [(ngModel)]="city"
+                  >
+                    <option [value]="item.id" *ngFor="let item of cities">
+                      {{ item.name }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Store ZipCode")
+                  }}</label>
+                  <input
+                    type="text"
+                    [class]="submited && zipcode == '' ? 'req' : ''"
+                    [(ngModel)]="zipcode"
+                    class="form-control"
+                    [placeholder]="util.translate('Store ZipCode')"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="myModal2.hide()"
+        >
+          {{ util.translate("Close") }}
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          *ngIf="action == 'create'"
+          (click)="saveChanges()"
+        >
+          {{ util.translate("Save Changes") }}
+        </button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<div
+  bsModal
+  #editInfoModal="bs-modal"
+  class="modal fade"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="myModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-primary modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ util.translate("Manage Stores") }}</h5>
+        <button
+          type="button"
+          class="close"
+          (click)="editInfoModal.hide()"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body long_content">
+        <div class="logoContainer">
+          {{ api.imageUrl + cover }}
+          <img
+            [src]="api.imageUrl + cover"
+            [class]="submited && cover == '' ? 'req' : ''"
+            onError="this.src='assets/img/dummy.jpeg'"
+          />
+        </div>
+        <div class="fileContainer sprite">
+          <span> {{ util.translate("Add Cover") }} </span>
+          <input
+            (change)="preview_banner($event.target.files)"
+            type="file"
+            value="Choose File"
+          />
+        </div>
+        <p class="text-heler">
+          {{
+            util.translate(
+              ".jpg, .jpeg, .png, .bmp recommended size (512 X 512) pixels"
+            )
+          }}
+        </p>
+        <div class="card">
+          <div class="card-body">
+            <div
+              class="card-header"
+              style="
+                margin: 10px 0px;
+                border: none;
+                text-transform: uppercase;
+                font-family: 'bold';
+              "
+            >
+              {{ util.translate("STORES DETAILS") }} :
+            </div>
+
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="form-group">
+                  <label>{{ util.translate("Store Name") }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [ngModelOptions]="{ standalone: true }"
+                    [(ngModel)]="name"
+                    [class]="submited && name == '' ? 'req' : ''"
+                    [placeholder]="util.translate('Store Name')"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-12">
+                <div class="form-group">
+                  <label>{{ util.translate("Store Address") }}</label>
+                  <textarea
+                    type="text"
+                    [class]="submited && address == '' ? 'req' : ''"
+                    class="form-control"
+                    [ngModelOptions]="{ standalone: true }"
+                    rows="5"
+                    [(ngModel)]="address"
+                    [placeholder]="util.translate('Store Address')"
+                  ></textarea>
+                </div>
+              </div>
+              <div class="col-sm-12">
+                <p class="text-heler">
+                  {{
+                    util.translate("Select Latitude & Longitude From here:")
+                  }}
+                  <a
+                    href="https://www.mapcoordinates.net/en"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style="color: blue !important"
+                    >https://www.mapcoordinates.net/en</a
+                  >
+                </p>
+                <p class="text-heler">
+                  {{
+                    util.translate("Please enter valid Latitude & Longitude")
+                  }}
+                </p>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Latitude")
+                  }}</label>
+                  <input
+                    type="text"
+                    [class]="submited && lat == '' ? 'req' : ''"
+                    [(ngModel)]="lat"
+                    class="form-control"
+                    [placeholder]="util.translate('Latitude')"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Longitude")
+                  }}</label>
+                  <input
+                    type="text"
+                    [class]="submited && lng == '' ? 'req' : ''"
+                    [(ngModel)]="lng"
+                    class="form-control"
+                    [placeholder]="util.translate('Longitude')"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Opening Time")
+                  }}</label>
+                  <input
+                    type="time"
+                    [class]="submited && openTime == '' ? 'req' : ''"
+                    [(ngModel)]="openTime"
+                    class="form-control"
+                    [placeholder]="util.translate('Opening Time')"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Closing Time")
+                  }}</label>
+                  <input
+                    type="time"
+                    [class]="submited && closeTime == '' ? 'req' : ''"
+                    [(ngModel)]="closeTime"
+                    class="form-control"
+                    [placeholder]="util.translate('Closing Time')"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Store Commision %")
+                  }}</label>
+                  <input
+                    type="number"
+                    [class]="submited && commission == '' ? 'req' : ''"
+                    [(ngModel)]="commission"
+                    class="form-control"
+                    [placeholder]="util.translate('Store Commision %')"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-12">
+                <div class="form-group">
+                  <label>{{ util.translate("Store Description") }}</label>
+                  <textarea
+                    type="text"
+                    [class]="submited && descritions == '' ? 'req' : ''"
+                    class="form-control"
+                    [ngModelOptions]="{ standalone: true }"
+                    rows="5"
+                    [(ngModel)]="descritions"
+                    [placeholder]="util.translate('Store Description')"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Select City")
+                  }}</label>
+                  <select
+                    id="select2"
+                    name="select2"
+                    [class]="submited && city == '' ? 'req' : ''"
+                    class="form-control form-control"
+                    [(ngModel)]="city"
+                  >
+                    <option [value]="item.id" *ngFor="let item of cities">
+                      {{ item.name }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="modal_lbl">{{
+                    util.translate("Store ZipCode")
+                  }}</label>
+                  <input
+                    type="text"
+                    [class]="submited && zipcode == '' ? 'req' : ''"
+                    [(ngModel)]="zipcode"
+                    class="form-control"
+                    [placeholder]="util.translate('Store ZipCode')"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="editInfoModal.hide()"
+        >
+          {{ util.translate("Close") }}
+        </button>
+
+        <button type="button" class="btn btn-primary" (click)="updateChanges()">
+          {{ util.translate("Update Changes") }}
+        </button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<div
+  bsModal
+  #largeModal="bs-modal"
+  class="modal fade"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="myModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">{{ util.translate("Select Countries") }}</h4>
+        <button
+          type="button"
+          class="close"
+          (click)="largeModal.hide()"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="overflow: scroll; height: 300px">
+        <div *ngFor="let item of dummyLoad">
+          <ngx-skeleton-loader
+            count="1"
+            appearance="line"
+          ></ngx-skeleton-loader>
+        </div>
+        <input
+          type="text"
+          class="form-control"
+          id="name"
+          [placeholder]="util.translate('Search Country')"
+          autocomplete="off"
+          (input)="onSearchChange($event.target.value)"
+        />
+        <div
+          style="
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+          "
+        >
+          <div
+            class="form-check"
+            *ngFor="let item of countries"
+            style="
+              display: flex;
+              justify-content: flex-start;
+              align-items: center;
+              margin: 5px 0px;
+            "
+          >
+            <input
+              class="form-check-input"
+              style="margin-top: 0px"
+              [(ngModel)]="country_code"
+              type="radio"
+              [id]="item.dialling_code"
+              [value]="item.dialling_code"
+            />
+            <label class="form-check-label" [for]="item.dialling_code">
+              +{{ item.dialling_code }} {{ item.country_name }}
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="largeModal.hide()"
+        >
+          {{ util.translate("Close") }}
+        </button>
+        <button type="button" class="btn btn-primary" (click)="useCode()">
+          {{ util.translate("Save Changes") }}
+        </button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->

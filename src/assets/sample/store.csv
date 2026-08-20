@@ -1,0 +1,2 @@
+id,uid,name,mobile,lat,lng,verified,address,descriptions,images,cover,status,commission,open_time,close_time,isClosed,certificate_url,certificate_type,rating,total_rating,cid,extra_field
+5,16,G-Mart,123456789,23.0304049,72.5995933,1,"TP Road, near Ring Road Circle, Ambli, Ahmedabad, Gujarat 380058","Best Milk and Milk products Production.",[],circul.png,1,0,06:30:00,22:00:00,1,,,0,0,1,

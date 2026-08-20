@@ -1,0 +1,173 @@
+<!-- 
+  Authors : initappz (Rahul Jograna)
+  Website : https://initappz.com/
+  App Name : Grocery Delivery App Ionic7 Capacitor
+  This App Template Source code is licensed as per the
+  terms found in the Website https://initappz.com/license
+  Copyright and Good Faith Purchasers © 2024-present initappz.
+-->
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-sm-12 col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    {{util.translate('Stores Request')}}
+                    <div class="card-header-actions">
+                        <!-- <span class="badge badge-success">Success</span> -->
+                        <button type="submit" (click)="exportCSV()" class="btn btn-sm btn-success"
+                            style="float: right;margin: 0px 5px;">
+                            {{util.translate('Export as CSV')}}
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <div class="row flex_row">
+                        <div class="col-lg-12">
+                            <input type="text" class="form-control form-control" id="name"
+                                [placeholder]="util.translate('Search Stores')" (input)="search($event.target.value)">
+                        </div>
+
+                    </div>
+
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th> {{util.translate('Cover')}}</th>
+                                <th> {{util.translate('Name')}}</th>
+                                <th> {{util.translate('City')}} </th>
+                                <th> {{util.translate('Address')}} </th>
+                                <th> {{util.translate('Owner')}} </th>
+                                <th> {{util.translate('Time')}} </th>
+                                <th> {{util.translate('Mobile')}} </th>
+                                <th> {{util.translate('Actions')}} </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of dummy">
+                                <td *ngFor="let item of [1,2,3,4,5,6,7,8,9,10]">
+                                    <ngx-skeleton-loader animation="progress"></ngx-skeleton-loader>
+                                </td>
+                            </tr>
+                            <tr
+                                *ngFor="let item of list | paginate: {id:'pagin1', itemsPerPage: 10, currentPage: page }">
+                                <td>
+                                    <img class="img-responsive" style="height: 40px;width: 40px; object-fit: cover;"
+                                        [src]="api.imageUrl + item.cover    "
+                                        onError="this.src='assets/img/dummy.jpeg'">
+                                </td>
+                                <td>
+                                    <label> <span style="font-size: 14px;"> {{item.name}}</span> <br>
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        {{item.city_name}}
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        {{item.address}}
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        {{item.first_name +' '+ item.last_name}}
+                                    </label>
+                                </td>
+
+
+                                <td>
+                                    <label>
+                                        {{getTime(item.open_time)}} - {{getTime(item.close_time)}}
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        {{item.country_code + item.mobile}}
+                                    </label>
+                                </td>
+                                <td>
+                                    <c-badge color="success" class="me-1 badge bg-success" (click)="accept(item)">
+                                        {{util.translate('Accept')}}
+                                    </c-badge>
+                                    <c-badge color="danger" class="me-1 badge bg-danger" (click)="reject(item)">
+                                        {{util.translate('Reject')}}
+                                    </c-badge>
+
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div *ngIf="list?.length > 0">
+                        <pagination-controls id="pagin1" (pageChange)="page = $event"></pagination-controls>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{util.translate('Reject Application')}} </h5>
+                <button type="button" class="close" (click)="myModal.hide()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <div class="form-group row">
+                    <div class="col-md-12">
+                        <label class="col-form-label" for="text-input">{{util.translate('Message')}} </label>
+                        <textarea type="text" rows="10" id="text-input" name="text-input" class="form-control"
+                            [placeholder]="util.translate('Message')" [(ngModel)]="message"></textarea>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                    (click)="myModal.hide()">{{util.translate('Close')}}</button>
+                <button type="button" class="btn btn-primary" (click)="onReject()">
+                    {{util.translate('Save Changes')}}</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div bsModal #myModal2="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{util.translate('Accept Application')}} </h5>
+                <button type="button" class="close" (click)="myModal2.hide()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <div class="form-group row">
+                    <div class="col-md-12">
+                        <label class="col-form-label" for="text-input">{{util.translate('Commission')}} </label>
+                        <input type="number" id="text-input" name="text-input" class="form-control"
+                            [placeholder]="util.translate('Commission')" [(ngModel)]="commision">
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                    (click)="myModal2.hide()">{{util.translate('Close')}}</button>
+                <button type="button" class="btn btn-primary" (click)="onAccept()">
+                    {{util.translate('Save Changes')}}</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

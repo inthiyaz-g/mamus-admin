@@ -1,0 +1,2 @@
+id,first_name,last_name,email,password,gender,city,address,lat,lng,mobile,status,cover,current,others,date,fcm_token,country_code,extra_field
+1,Johnson,Doe,john@initappz.com,password,1,2,"316 eva surbhi opp aksharwadi waghawadi road bhavnagar",18.5070977,73.9312727,7485962310,1,user2.png,active,,2020-07-27,8965475-0665-41a3-a375-359c88a0adec,+91,

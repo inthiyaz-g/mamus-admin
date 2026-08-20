@@ -1,0 +1,334 @@
+/*
+  Authors : initappz (Rahul Jograna)
+  Website : https://initappz.com/
+  App Name : Grocery Delivery App Ionic7 Capacitor
+  This App Template Source code is licensed as per the
+  terms found in the Website https://initappz.com/license
+  Copyright and Good Faith Purchasers © 2024-present initappz.
+*/
+.nav-item {
+  cursor: pointer !important;
+}
+
+.orders {
+  .card_div_skel {
+    padding: 10px;
+    display: flex;
+    border-radius: 10px;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.5);
+    position: relative;
+    margin-bottom: 16px;
+    flex-direction: column;
+  }
+
+  .card_div {
+    padding: 10px;
+    display: flex;
+    border-radius: 10px;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.5);
+    position: relative;
+    margin-bottom: 16px;
+
+    .image_div {
+      height: 95px;
+      width: 95px;
+      min-width: 95px;
+
+      img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+    }
+
+    .status {
+      position: absolute;
+      right: 0;
+      bottom: 0px;
+      padding: 5px;
+      background: green;
+      border-bottom-right-radius: 5px;
+      color: white;
+      text-transform: uppercase;
+      font-size: 12px;
+      font-family: "bold";
+    }
+
+    .desc_div {
+      width: 100%;
+      padding: 0px 5px;
+
+      .border_bottom {
+        padding-bottom: 10px;
+        width: 100%;
+
+        .items {
+          margin: 0px;
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+          font-size: 12px;
+          font-family: "bold";
+          padding-bottom: 5px;
+          border-bottom: 0.5px dashed lightgray;
+          margin-bottom: 5px;
+        }
+
+        .itemss {
+          margin: 0px;
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+          font-size: 12px;
+          font-family: "bold";
+          margin-bottom: 5px;
+        }
+      }
+
+      .datetime {
+        font-size: 12px;
+        font-family: "bold";
+      }
+    }
+  }
+}
+
+.anaylics {
+  .main_content_div {
+    .content_div {
+      padding: 16px;
+      background: white;
+      margin-bottom: 10px;
+
+      .title_flex {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+
+        .title_lbl {
+          font-size: 18px;
+          font-family: "bold";
+        }
+
+        div {
+          display: flex;
+          align-items: center;
+        }
+      }
+
+      .span_lbl {
+        font-size: 15px;
+
+        span {
+          color: green;
+        }
+      }
+
+      .slide_div {
+        border-radius: 10px;
+        background: #0594aa;
+        width: 100%;
+        margin-bottom: 40px;
+
+        div {
+          padding: 10px;
+
+          .simp_lbl {
+            color: white;
+            text-align: left;
+            font-size: 14px;
+          }
+
+          .bold_lbl {
+            color: white;
+            font-family: "bold";
+            font-size: 18px;
+            text-align: left;
+          }
+        }
+      }
+
+      .blue_div {
+        background: #394a84;
+        padding: 10px;
+        border-radius: 10px;
+
+        .bold_lbl {
+          color: white;
+          font-family: "bold";
+          margin-bottom: 8px;
+        }
+
+        .small_lbl {
+          color: white;
+          font-size: 13px;
+        }
+      }
+
+      .border_slider_div {
+        border-radius: 10px;
+        border: 1px solid lightgrey;
+        margin-bottom: 40px;
+        width: 100%;
+
+        div {
+          padding: 10px;
+
+          .simp_lbl {
+            text-align: left;
+            font-size: 14px;
+          }
+
+          .bold_lbl {
+            font-family: "bold";
+            font-size: 18px;
+            text-align: left;
+          }
+        }
+      }
+
+      .border_div {
+        border: 1px solid lightgrey;
+        border-radius: 5px;
+        margin-bottom: 16px;
+
+        .inner_content {
+          padding: 10px;
+
+          .bold_lbl {
+            font-family: "bold";
+            margin-bottom: 10px;
+          }
+
+          .time_flex {
+            display: flex;
+            color: grey;
+
+            div {
+              display: flex;
+              align-items: center;
+            }
+          }
+
+          .grey_lbl {
+            font-size: 14px;
+            color: grey;
+
+            span {
+              font-family: "bold";
+            }
+          }
+        }
+
+        .inner_flex {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          .small_lbl {
+            font-size: 14px;
+          }
+        }
+      }
+
+      .row_flex {
+        display: flex;
+        margin-left: -16px;
+        margin-right: -16px;
+
+        div {
+          padding: 16px 10px;
+        }
+
+        .f_div {
+          width: 50%;
+        }
+
+        .l_div {
+          width: 50%;
+        }
+      }
+    }
+  }
+
+  .chart_content_div {
+    .content_div {
+      padding: 16px;
+      background: white;
+      margin-bottom: 12px;
+
+      .title_lbl {
+        font-size: 18px;
+        font-family: "bold";
+        margin-bottom: 16px;
+      }
+
+      .color_flex {
+        display: flex;
+        align-items: center;
+
+        .color_div {
+          width: 20px;
+          height: 6px;
+          border-radius: 10px;
+          background: green;
+        }
+      }
+
+      .blue_div {
+        background: #394a84;
+        padding: 10px;
+        border-radius: 10px;
+
+        .bold_lbl {
+          color: white;
+          font-family: "bold";
+          margin-bottom: 8px;
+        }
+
+        .small_lbl {
+          color: white;
+          font-size: 13px;
+        }
+      }
+
+      .span_lbl {
+        font-size: 15px;
+        margin-bottom: 20px;
+
+        span {
+          color: green;
+        }
+      }
+
+      .no_lbl {
+        margin-bottom: 20px;
+        margin-top: 20px;
+
+        span {
+          font-family: "bold";
+          font-size: 26px;
+          margin-right: 8px;
+        }
+
+        font-size: 14px;
+      }
+
+      .chart_flex {
+        display: flex;
+
+        .color_content {
+          .color_flex {
+            margin-bottom: 20px;
+          }
+        }
+      }
+
+      .line_div {
+        width: 100%;
+        height: 1px;
+        background: lightgray;
+      }
+    }
+  }
+}

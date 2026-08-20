@@ -1,0 +1,2 @@
+id,first_name,last_name,email,password,gender,type,status,lat,lng,cover,mobile,verified,fcm_token,others,date,stripe_key,country_code,extra_field
+4,Super,Admin,rahul@initappz.com,password,1,user,1,,,user7.png,12345678,1,74859685-fc48-4b23-8877-cc7c58d57736,1,2020-06-05,,+91,

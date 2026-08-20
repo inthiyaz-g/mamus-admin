@@ -1,0 +1,141 @@
+<!-- 
+  Authors : initappz (Rahul Jograna)
+  Website : https://initappz.com/
+  App Name : Grocery Delivery App Ionic7 Capacitor
+  This App Template Source code is licensed as per the
+  terms found in the Website https://initappz.com/license
+  Copyright and Good Faith Purchasers © 2024-present initappz.
+-->
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    {{util.translate('General Information')}}
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{util.translate('App Name')}}</label>
+                                <input type="text" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="name" [placeholder]="util.translate('App Name')">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{util.translate('Contact No')}}</label>
+                                <input type="number" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="mobile" [placeholder]="util.translate('Contact No')">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{util.translate('Contact Email')}}</label>
+                                <input type="email" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="email" [placeholder]="util.translate('Contact Email')">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{util.translate('Address')}}</label>
+                                <input type="text" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="address" [placeholder]="util.translate('Address')">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{util.translate('City')}}</label>
+                                <input type="text" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="city" [placeholder]="util.translate('City')">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{util.translate('State')}}</label>
+                                <input type="text" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="state" [placeholder]="util.translate('State')">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{util.translate('Zip')}}</label>
+                                <input type="text" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="zip" [placeholder]="util.translate('Zip')">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{util.translate('Country')}}</label>
+                                <input type="text" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="country" [placeholder]="util.translate('Country')">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-header">
+                    {{util.translate('Order Information')}}
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{util.translate('Minimum Order')}}</label>
+                                <input type="number" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="min" [placeholder]="util.translate('Minimum Order')">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{util.translate('Free Shipping on order price')}}</label>
+                                <input type="number" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="free" [placeholder]="util.translate('Free Shipping on order price')">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{util.translate('Order Tax')}}</label>
+                                <input type="number" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="tax" [placeholder]="util.translate('Order Tax')">
+                            </div>
+                        </div>
+
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{util.translate('Shipping Price')}}</label>
+                                <select class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="shipping">
+                                    <option value="fixed">{{util.translate('Fixed')}} </option>
+                                    <option value="km"> {{util.translate('Per KM')}}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6" *ngIf="shipping =='fixed'">
+                            <div class="form-group">
+                                <label>{{util.translate('Fixed price')}}</label>
+                                <input type="number" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="shippingPrice" [placeholder]="util.translate('Fixed price')">
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6" *ngIf="shipping =='km'">
+                            <div class="form-group">
+                                <label>{{util.translate('Per KM price')}}</label>
+                                <input type="number" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="shippingPrice" [placeholder]="util.translate('Per KM price')">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <button type="button" class="btn btn-success" (click)="saveChanges()">
+                        {{util.translate('Submit')}}</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

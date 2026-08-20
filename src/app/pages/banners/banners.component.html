@@ -1,0 +1,288 @@
+<!-- 
+  Authors : initappz (Rahul Jograna)
+  Website : https://initappz.com/
+  App Name : Grocery Delivery App Ionic7 Capacitor
+  This App Template Source code is licensed as per the
+  terms found in the Website https://initappz.com/license
+  Copyright and Good Faith Purchasers © 2024-present initappz.
+-->
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    {{util.translate('Banners Information')}}
+
+                </div>
+                <div class="card-body">
+
+                    <div class="logoContainer">
+                        <img [src]="api.imageUrl+ cover" onError="this.src='assets/img/dummy.jpeg'">
+                    </div>
+                    <div class="fileContainer sprite">
+                        <span> {{util.translate('Add Cover')}} </span>
+                        <input (change)="preview_banner($event.target.files)" type="file" value="Choose File">
+                    </div>
+                    <p class="text-heler">
+                        {{util.translate(".jpg, .jpeg, .png, .bmp recommended size (512 X 512) pixels")}} </p>
+                    <form>
+                        <div class="row">
+
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="modal_lbl">{{util.translate('Banners Position')}}</label>
+                                    <select class="form-control" [ngModelOptions]="{standalone: true}"
+                                        [(ngModel)]="position">
+                                        <option [value]="0">{{util.translate('Top')}}</option>
+                                        <option [value]="1">{{util.translate('Bottom')}}</option>
+                                        <option [value]="2">{{util.translate('Between')}}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="modal_lbl">{{util.translate('Banners Type')}}</label>
+                                    <select class="form-control" [ngModelOptions]="{standalone: true}"
+                                        [(ngModel)]="type" (change)="changeType()">
+                                        <option [value]="0">{{util.translate('Category')}}</option>
+                                        <option [value]="1">{{util.translate('Product')}}</option>
+                                        <option [value]="2">{{util.translate('External Links')}}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="form-group" *ngIf="type == 0">
+                            <label class="modal_lbl">{{util.translate('Search category')}}</label>
+                            <input type="text" [(ngModel)]="search" (input)="searchCate($event.target.value)"
+                                class="form-control" [placeholder]="util.translate('Search category')"
+                                [ngModelOptions]="{standalone: true}">
+                            <div *ngFor="let item of categories" (click)="selectCate(item)">
+                                <div class="selectItem">
+                                    <img [src]="api.imageUrl+item.cover" alt="" class="imgs">
+                                    <p class="name"> {{item.id}} - {{item.name}}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" *ngIf="type == 1">
+                            <label class="modal_lbl">{{util.translate('Search products')}}</label>
+                            <input type="text" [(ngModel)]="search" (input)="searchProduct($event.target.value)"
+                                class="form-control" [placeholder]="util.translate('Search products')"
+                                [ngModelOptions]="{standalone: true}">
+                            <div *ngFor="let item of products" (click)="selectProduct(item)">
+                                <div class="selectItem">
+                                    <img [src]="api.imageUrl+item.cover" alt="" class="imgs">
+                                    <p class="name"> {{item.id}} {{item.name}}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" *ngIf="type == 2">
+                            <label class="modal_lbl">{{util.translate('External Link URL')}}</label>
+                            <input type="url" [(ngModel)]="link" class="form-control"
+                                [placeholder]="util.translate('External Link URL')"
+                                [ngModelOptions]="{standalone: true}">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="modal_lbl">{{util.translate('Operating City')}}</label>
+                            <select class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="cityId">
+                                <option [value]="item.id" *ngFor="let item of cities">{{item.name}}</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="modal_lbl">{{util.translate('Start Date')}}</label>
+                                    <input type="date" [(ngModel)]="from" class="form-control"
+                                        [placeholder]="util.translate('Start Date')"
+                                        [ngModelOptions]="{standalone: true}">
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="modal_lbl">{{util.translate('End Date')}}</label>
+                                    <input type="date" [(ngModel)]="to" class="form-control"
+                                        [placeholder]="util.translate('End Date')"
+                                        [ngModelOptions]="{standalone: true}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="modal_lbl">{{util.translate('Message')}}</label>
+                            <textarea type="url" [(ngModel)]="message" class="form-control"
+                                [placeholder]="util.translate('Message')" rows="4"
+                                [ngModelOptions]="{standalone: true}"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="modal_lbl">{{util.translate('Banners Status')}}</label>
+                            <select class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="status">
+                                <option value="-1">{{util.translate('Select Status')}}</option>
+                                <option value="1">{{util.translate('Active')}}</option>
+                                <option value="0">{{util.translate('Deactive')}}</option>
+                            </select>
+                        </div>
+
+                    </form>
+                    <br>
+                    <button type="button" class="btn btn-success" *ngIf="this.action == 'create'"
+                        (click)="createCategory()">
+                        {{util.translate('Save')}}</button>
+                    <button type="button" class="btn btn btn-primary" *ngIf="this.action == 'update'"
+                        (click)="updateCategory()">
+                        {{util.translate('Update')}}</button>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    {{util.translate('All Banners')}}
+                    <div class="card-header-actions">
+                        <button type="submit" class="btn btn-sm btn-warning" style="float: right;margin: 0px 5px;"
+                            (click)="importCSV()">
+                            {{util.translate('Bulk CSV Upload')}}
+                        </button> &nbsp;
+                        <button type="submit" (click)="exportCSV()" class="btn btn-sm btn-success"
+                            style="float: right;margin: 0px 5px;">
+                            {{util.translate('Export as CSV')}}
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <div class="error_div" *ngIf="list?.length <= 0 && dummy?.length <= 0">
+                        <label>{{util.translate('No Data Found..')}}</label>
+                    </div>
+
+                    <table class="table table-responsive-sm table-hover mb-0">
+                        <thead *ngIf="list?.length > 0">
+                            <tr>
+                                <th>{{util.translate('Id')}}</th>
+                                <th>{{util.translate('Cover')}}</th>
+                                <th>{{util.translate('From-To')}}</th>
+                                <th>{{util.translate('Position')}}</th>
+                                <th>{{util.translate('Type')}}</th>
+                                <th>{{util.translate('Value')}}</th>
+                                <th>{{util.translate('City')}}</th>
+                                <th>{{util.translate('Action')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of dummy">
+                                <td *ngFor="let item of [1,2,3,4]">
+                                    <ngx-skeleton-loader count="1" appearance="line"></ngx-skeleton-loader>
+                                </td>
+                            </tr>
+                            <tr
+                                *ngFor="let item of list | paginate: {id:'pagin1', itemsPerPage: 10, currentPage: page }">
+                                <td>{{item.id}} </td>
+                                <td>
+                                    <img class="img-responsive" style="height: 30px;width: 30px; object-fit: cover;"
+                                        [src]="api.imageUrl + item.cover" onError="this.src='assets/img/dummy.jpeg'">
+                                </td>
+                                <td>{{item.from}} - {{item.to}} </td>
+                                <td>
+                                    <span *ngIf="item.position == '0' || item.position == 0 ">{{util.translate('Top')}}
+                                    </span>
+                                    <span
+                                        *ngIf="item.position == '1' || item.position == 1">{{util.translate('Bottom')}}
+                                    </span>
+                                    <span
+                                        *ngIf="item.position == '2' || item.position == 2">{{util.translate('Between')}}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span *ngIf="item.type =='0' || item.type == 0">{{util.translate('Category')}}
+                                    </span>
+                                    <span *ngIf="item.type =='1' || item.type == 1">{{util.translate('Product')}}
+                                    </span>
+                                    <span *ngIf="item.type =='2' || item.type == 2">{{util.translate('External Link')}}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span *ngIf="item.type =='0' || item.type == 0">
+                                        {{item && item.cate_name && item.cate_name.name ? item.cate_name.name :'' }}
+                                    </span>
+                                    <span *ngIf="item.type =='1' || item.type == 1">
+                                        {{item && item.product_name && item.product_name.name ? item.product_name.name
+                                        :'' }}
+                                    </span>
+                                    <span *ngIf="item.type =='2' || item.type == 2">
+                                        {{item.link}}
+                                    </span>
+
+                                </td>
+                                <td>
+                                    {{item && item.city_name && item.city_name.name ? item.city_name.name
+                                    :'' }}
+                                </td>
+                                <td>
+                                    <c-badge [color]="item.status == 1 ? 'success' :'dark'"
+                                        [class]="item.status == 1 ? 'me-1 badge bg-success' :'me-1 badge bg-dark' "
+                                        (click)="statusUpdate(item)">
+                                        {{item.status == 1 ?util.translate('Active'): util.translate('Deactived')}}
+                                    </c-badge>
+                                    <c-badge color="primary" class="me-1 badge bg-info" (click)="updateInfo(item.id)">
+                                        {{util.translate('Edit')}}
+                                    </c-badge>
+
+                                    <c-badge color="danger" class="me-1 badge bg-danger" (click)="deleteItem(item.id)">
+                                        {{util.translate('Delete')}}
+                                    </c-badge>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div *ngIf="list?.length > 0">
+                        <pagination-controls id="pagin1" (pageChange)="page = $event"></pagination-controls>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div bsModal #myModal3="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-warning" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{util.translate('Bulk CSV Upload')}} </h5>
+                <button type="button" class="close" (click)="myModal3.hide()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body long_content">
+                <div class="form-group row">
+                    <div class="col-md-12">
+                        <input (change)="uploadCSV($event.target.files)" type="file" id="file-input" name="file-input"
+                            accept=".csv">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-warning" style="float: right;" (click)="downloadSample()">
+                    {{util.translate('Download Sample CSV')}} &nbsp; <i class="fa fa-cloud-download"></i></button>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                    (click)="myModal3.hide()">{{util.translate('Close')}}</button>
+
+                <button type="button" class="btn btn-warning" (click)="saveType()">
+                    {{util.translate('Save Changes')}}</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

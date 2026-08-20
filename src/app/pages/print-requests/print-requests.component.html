@@ -1,0 +1,177 @@
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-header">
+          {{util.translate('Print Requests')}}
+          <div class="card-header-actions">
+            <button type="button" class="btn btn-sm btn-light" (click)="getRequests()">
+              <i class="fa fa-refresh"></i> {{util.translate('Refresh')}}
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <input class="form-control" [(ngModel)]="searchTerm" (ngModelChange)="applySearch()"
+                [placeholder]="util.translate('Search by request ID, customer name, or email')">
+            </div>
+          </div>
+
+          <div *ngIf="!filteredRequests?.length && !dummy.length" class="text-center py-4">
+            <p>{{util.translate('No print requests found.')}}</p>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead *ngIf="filteredRequests?.length">
+                <tr>
+                  <th>{{util.translate('ID')}}</th>
+                  <th>{{util.translate('Customer')}}</th>
+                  <th>{{util.translate('Documents')}}</th>
+                  <th>{{util.translate('Print options')}}</th>
+                  <th>{{util.translate('Payment')}}</th>
+                  <th>{{util.translate('Status')}}</th>
+                  <th>{{util.translate('Updated')}}</th>
+                  <th>{{util.translate('Action')}}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of dummy">
+                  <td *ngFor="let column of [1,2,3,4,5,6,7,8]">
+                    <ngx-skeleton-loader count="1" appearance="line"></ngx-skeleton-loader>
+                  </td>
+                </tr>
+                <tr *ngFor="let item of filteredRequests | paginate: { id: 'printRequests', itemsPerPage: 10, currentPage: page }">
+                  <td>#{{item.id}}</td>
+                  <td>
+                    <strong>{{getCustomerName(item)}}</strong><br>
+                    <small>{{item.user?.email || '-'}}</small>
+                  </td>
+                  <td>{{item.documents?.length || 0}} {{util.translate('file(s)')}}</td>
+                  <td>
+                    {{item.copies}} {{util.translate('copy/copies')}} · {{item.paper_size}}<br>
+                    <small>{{item.color_mode === 'color' ? util.translate('Colour') : util.translate('Black & white')}} ·
+                      {{item.duplex === 'double_sided' ? util.translate('Double-sided') : util.translate('Single-sided')}}</small>
+                  </td>
+                  <td>
+                    <strong>₹{{formatAmount(item.amount)}}</strong><br>
+                    <small>{{item.billable_pages || 0}} {{util.translate('printed page(s)')}}</small><br>
+                    <span class="payment-pill" [ngClass]="'payment-' + (item.payment_status || 'paid')">
+                      {{paymentStatusLabel(item.payment_status)}}
+                    </span>
+                  </td>
+                  <td><span class="status-pill" [ngClass]="'status-' + item.status">{{statusLabel(item.status)}}</span></td>
+                  <td>{{item.updated_at | date:'medium'}}</td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-primary" (click)="openItem(item)">
+                      {{util.translate('View / Print')}}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="filteredRequests?.length">
+            <pagination-controls id="printRequests" (pageChange)="page = $event"></pagination-controls>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div bsModal #requestModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" *ngIf="selectedRequest">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{util.translate('Print Request')}} #{{selectedRequest.id}}</h5>
+        <button type="button" class="close" (click)="requestModal.hide()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="request-summary">
+          <div>
+            <span>{{util.translate('Customer')}}</span>
+            <strong>{{getCustomerName(selectedRequest)}}</strong>
+            <small>{{selectedRequest.user?.email || '-'}} {{selectedRequest.user?.mobile ? '· ' + selectedRequest.user.mobile : ''}}</small>
+          </div>
+          <div>
+            <span>{{util.translate('Print options')}}</span>
+            <strong>{{selectedRequest.copies}} {{util.translate('copy/copies')}} · {{selectedRequest.paper_size}}</strong>
+            <small>{{selectedRequest.color_mode === 'color' ? util.translate('Colour') : util.translate('Black & white')}} ·
+              {{selectedRequest.duplex === 'double_sided' ? util.translate('Double-sided') : util.translate('Single-sided')}}</small>
+          </div>
+          <div>
+            <span>{{util.translate('Payment')}}</span>
+            <strong>₹{{formatAmount(selectedRequest.amount)}}</strong>
+            <small>{{selectedRequest.page_count || 0}} {{util.translate('uploaded page(s)')}} ·
+              {{selectedRequest.billable_pages || 0}} {{util.translate('printed page(s)')}} ·
+              {{paymentStatusLabel(selectedRequest.payment_status)}}</small>
+          </div>
+        </div>
+
+        <div *ngIf="!isPaid(selectedRequest)" class="alert alert-warning mt-3 mb-0">
+          {{util.translate('This request is waiting for payment and cannot be printed yet.')}}
+        </div>
+
+        <div *ngIf="selectedRequest.notes" class="instructions">
+          <strong>{{util.translate('Customer instructions')}}</strong>
+          <p>{{selectedRequest.notes}}</p>
+        </div>
+
+        <div *ngIf="deliveryAddress(selectedRequest) as address" class="delivery-address">
+          <strong><i class="fa fa-map-marker"></i> {{util.translate('Delivery address')}}</strong>
+          <span>{{(address.title || util.translate('Address')) | titlecase}}</span>
+          <p>{{deliveryAddressLine(address)}}<span *ngIf="address.pincode"> - {{address.pincode}}</span></p>
+        </div>
+
+        <h6>{{util.translate('Documents')}}</h6>
+        <div class="document-row" *ngFor="let document of selectedRequest.documents">
+          <div>
+            <i class="fa fa-file-text-o"></i>
+            <strong>{{document.original_name}}</strong>
+            <small>{{document.mime_type}} · {{document.page_count || 1}} {{util.translate('page(s)')}} · {{formatFileSize(document.size)}}</small>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="openDocument(document)"
+            [disabled]="!isPaid(selectedRequest) || selectedRequest.documents_deleted_at">
+            <i class="fa fa-print"></i> {{util.translate('Open / Print')}}
+          </button>
+        </div>
+
+        <div class="form-group mt-4">
+          <label for="print-status">{{util.translate('Status')}}</label>
+          <select id="print-status" class="form-control" [(ngModel)]="selectedStatus" [disabled]="!isPaid(selectedRequest)">
+            <option *ngFor="let status of statuses" [value]="status">{{statusLabel(status)}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="admin-note">{{util.translate('Message shown to the customer')}}</label>
+          <textarea id="admin-note" class="form-control" rows="3" maxlength="1000" [(ngModel)]="adminNote" [disabled]="!isPaid(selectedRequest)"
+            [placeholder]="util.translate('For example: Your documents are ready for collection')"></textarea>
+        </div>
+
+        <div class="timeline" *ngIf="statusHistory(selectedRequest).length">
+          <h6>{{util.translate('Progress')}}</h6>
+          <div class="timeline-event" *ngFor="let event of statusHistory(selectedRequest)">
+            <span></span>
+            <div>
+              <strong>{{statusLabel(event.status)}}</strong>
+              <small>{{event.at | date:'medium'}}</small>
+              <p *ngIf="event.note">{{event.note}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="requestModal.hide()">{{util.translate('Close')}}</button>
+        <button type="button" class="btn btn-primary" (click)="saveStatus()" [disabled]="saving || !isPaid(selectedRequest)">
+          {{util.translate('Save status')}}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -82,12 +82,13 @@ export class OrdersComponent implements OnInit {
         'date': this.util.replaceWithDot(element.date_time),
         'total': this.util.replaceWithDot(element.grand_total),
         'order_to': this.util.replaceWithDot(element.order_to),
+        'delivery_type': this.deliveryLabel(element),
         'store_id': this.util.replaceWithDot(element.store_id),
       }
       data.push(info);
     });
     const name = 'orders';
-    this.util.downloadFile(data, name, ['id', 'username', 'store', 'date', 'total', 'order_to', 'store_id']);
+    this.util.downloadFile(data, name, ['id', 'username', 'store', 'date', 'total', 'order_to', 'delivery_type', 'store_id']);
   }
 
   saveType() {
@@ -166,6 +167,17 @@ export class OrdersComponent implements OnInit {
       }
     }
     this.router.navigate(['order-details'], param);
+  }
+
+  deliveryLabel(order: any): string {
+    if (order?.delivery_type === 'instant') {
+      return this.util.translate('Instant Delivery');
+    }
+
+    const schedule = order?.delivery_schedule
+      ? ' · ' + this.util.translate(String(order.delivery_schedule).replace(/^./, (letter: string) => letter.toUpperCase()))
+      : '';
+    return this.util.translate('Scheduled Delivery') + schedule;
   }
 
   clean() {

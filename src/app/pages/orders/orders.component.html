@@ -56,6 +56,7 @@
                                 <th>{{util.translate('Store')}}</th>
                                 <th>{{util.translate('Date')}}</th>
                                 <th>{{util.translate('Total')}}</th>
+                                <th>{{util.translate('Delivery')}}</th>
                                 <th>{{util.translate('Order To')}}</th>
                                 <th>{{util.translate('Action')}}</th>
                             </tr>
@@ -64,7 +65,7 @@
                         <tbody>
 
                             <tr *ngFor="let item of dummy">
-                                <td *ngFor="let item of [1,2,3,4,5,6,7]">
+                                <td *ngFor="let item of [1,2,3,4,5,6,7,8]">
                                     <ngx-skeleton-loader count="1" appearance="line"></ngx-skeleton-loader>
                                 </td>
                             </tr>
@@ -82,6 +83,14 @@
                                     </span>
                                     <span *ngIf="util.cside =='right'">
                                         {{item.grand_total}} {{util.currecny}}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="delivery-badge" [class.instant]="item.delivery_type === 'instant'"
+                                        [class.scheduled]="item.delivery_type !== 'instant'">
+                                        <i class="fa" [class.fa-bolt]="item.delivery_type === 'instant'"
+                                            [class.fa-calendar]="item.delivery_type !== 'instant'"></i>
+                                        {{deliveryLabel(item)}}
                                     </span>
                                 </td>
                                 <td> {{item.order_to}} </td>

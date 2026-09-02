@@ -6,6 +6,35 @@
   terms found in the Website https://initappz.com/license
   Copyright and Good Faith Purchasers © 2024-present initappz.
 */
+
+.navigation-button {
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+.delivery-type-row {
+  align-items: center;
+}
+
+.delivery-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+
+  &.instant {
+    background: #fff3e6;
+    color: #c2410c;
+  }
+
+  &.scheduled {
+    background: #eaf3ff;
+    color: #1d5fa7;
+  }
+}
 .main_content_div {
   width: 100%;
   padding: 16px;

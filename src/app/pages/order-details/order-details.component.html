@@ -148,7 +148,11 @@
                                 <i class="fa fa-location-arrow fa-lg"></i>
                                 {{address}}
                             </p>
-
+                            <button type="button" class="btn btn-sm btn-outline-primary navigation-button"
+                                (click)="navigateToCustomer()">
+                                <i class="fa fa-location-arrow"></i>
+                                {{util.translate('Navigate')}}
+                            </button>
                         </div>
 
                         <p class="titles"> {{util.translate('Basic Details')}} </p>
@@ -165,6 +169,16 @@
                         <div class="flex_div">
                             <p> {{util.translate('Delivery On')}} </p>
                             <p class="values"> {{datetime}} </p>
+                        </div>
+
+                        <div class="flex_div delivery-type-row">
+                            <p>{{util.translate('Delivery Type')}}</p>
+                            <span class="delivery-badge" [class.instant]="deliveryType === 'instant'"
+                                [class.scheduled]="deliveryType !== 'instant'">
+                                <i class="fa" [class.fa-bolt]="deliveryType === 'instant'"
+                                    [class.fa-calendar]="deliveryType !== 'instant'"></i>
+                                {{deliveryLabel()}}
+                            </span>
                         </div>
 
                         <div class="hr_line_div" *ngIf="userInfo && userInfo.mobile"></div>

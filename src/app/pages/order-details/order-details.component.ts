@@ -61,6 +61,8 @@ export class OrderDetailsComponent implements OnInit {
   payName: any = "";
 
   paymentRef: any;
+  deliveryType: 'instant' | 'scheduled' = 'scheduled';
+  deliverySchedule: string = '';
   constructor(
     private route: ActivatedRoute,
     private navCtrl: Location,
@@ -203,6 +205,8 @@ export class OrderDetailsComponent implements OnInit {
           this.payName = info.paid_method;
           this.paymentRef = info.pay_key;
           this.orderAt = info.order_to;
+          this.deliveryType = info.delivery_type === 'instant' ? 'instant' : 'scheduled';
+          this.deliverySchedule = info.delivery_schedule || '';
           this.tax = info.tax;
           this.driverId = info.driver_id;
           if (info.discount > 0) {
@@ -279,6 +283,31 @@ export class OrderDetailsComponent implements OnInit {
     } else {
       this.util.error(this.util.translate("Email not found"));
     }
+  }
+
+  navigateToCustomer() {
+    const lat = Number(this.userLat);
+    const lng = Number(this.userLng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      this.util.error(this.util.translate('Customer location is not available'));
+      return;
+    }
+
+    window.open(
+      'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng,
+      '_blank',
+      'noopener'
+    );
+  }
+
+  deliveryLabel(): string {
+    if (this.deliveryType === 'instant') {
+      return this.util.translate('Instant Delivery · 10–15 mins');
+    }
+
+    return this.util.translate('Scheduled Delivery') + (this.deliverySchedule
+      ? ' · ' + this.deliverySchedule.charAt(0).toUpperCase() + this.deliverySchedule.slice(1)
+      : '');
   }
 
   printOrder() {

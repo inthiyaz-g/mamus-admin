@@ -48,6 +48,18 @@
                                 </div>
 
                                 <div class="row">
+                                    <div class="col-6">
+                                        <p class="sub"><b>{{util.translate('Signup source')}} : </b></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="signup-source" [class.website]="signupSource === 'Website'"
+                                            [class.unknown]="signupSource === 'Not recorded'">
+                                            {{util.translate(signupSource)}}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="row">
                                     <div class="col-4 b-r-default text-center">
                                         <p class="text-muted">{{util.translate('Orders')}} </p>
                                         <span>{{orders.length}}</span>

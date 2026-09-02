@@ -24,6 +24,7 @@ export class ManageUsersComponent implements OnInit {
   cover: any = '';
   email: any = '';
   phone: any = '';
+  signupSource: string = 'Not recorded';
 
   orders: any[] = [];
   address: any[] = [];
@@ -57,6 +58,7 @@ export class ManageUsersComponent implements OnInit {
         this.cover = info.user.cover;
         this.email = info.user.email;
         this.phone = info.user.country_code + info.user.mobile;
+        this.signupSource = this.formatSignupSource(info.user.signup_source);
         info.orders.forEach((element: any) => {
           if (((x) => { try { JSON.parse(x); return true; } catch (e) { return false } })(element.orders)) {
             element.orders = JSON.parse(element.orders);
@@ -93,6 +95,18 @@ export class ManageUsersComponent implements OnInit {
 
   getImage() {
     return this.api.imageUrl + this.cover;
+  }
+
+  formatSignupSource(source: string): string {
+    if (source === 'app') {
+      return 'Mobile App';
+    }
+
+    if (source === 'website') {
+      return 'Website';
+    }
+
+    return 'Not recorded';
   }
 
   goToOrder(item: any) {

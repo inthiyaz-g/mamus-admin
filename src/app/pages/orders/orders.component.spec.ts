@@ -1,5 +1,10 @@
-import { fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ApiService } from 'src/app/services/api.service';
+import { UtilService } from 'src/app/services/util.service';
 import { OrdersComponent } from './orders.component';
+import { OrdersModule } from './orders.module';
 
 describe('OrdersComponent operations', () => {
   let component: OrdersComponent;
@@ -52,4 +57,64 @@ describe('OrdersComponent operations', () => {
     const row = util.downloadFile.calls.mostRecent().args[0][0];
     expect(row.store).toBe('"Store, Restaurant"'); expect(row.total).toBe('"55.23"');
   }));
+});
+
+describe('OrdersComponent layout with the global CoreUI styles', () => {
+  let fixture: ComponentFixture<OrdersComponent>;
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [OrdersModule, RouterTestingModule, NoopAnimationsModule],
+      providers: [
+        { provide: ApiService, useValue: { get_private: () => Promise.resolve({ success: true, status: 200, data: [] }) } },
+        { provide: UtilService, useValue: { translate: (text: string) => text, apiErrorHandler: jasmine.createSpy() } }
+      ]
+    }).compileComponents();
+    fixture = TestBed.createComponent(OrdersComponent);
+    // Layout checks never load or alter production orders.
+    spyOn(fixture.componentInstance, 'getOrders').and.stub();
+    fixture.detectChanges();
+  });
+  afterEach(() => fixture.destroy());
+
+  it('keeps the in-progress metric full height and all card content inside its border', () => {
+    const cards = Array.from(fixture.nativeElement.querySelectorAll('.metric')) as HTMLElement[];
+    expect(cards.length).toBe(3);
+    const heights = cards.map(card => card.getBoundingClientRect().height);
+    expect(Math.min(...heights)).toBeGreaterThanOrEqual(108);
+    expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(2);
+    cards.forEach(card => {
+      expect(card.classList.contains('progress')).toBeFalse();
+      const bounds = card.getBoundingClientRect();
+      const content = card.querySelector('.metric-content')!.getBoundingClientRect();
+      expect(content.top).toBeGreaterThanOrEqual(bounds.top);
+      expect(content.bottom).toBeLessThanOrEqual(bounds.bottom);
+      expect(getComputedStyle(card).overflow).toBe('visible');
+      expect(card.querySelector('.metric-icon svg use')).not.toBeNull();
+    });
+  });
+
+  it('hides the accessible search label without taking space from the input', () => {
+    const label = fixture.nativeElement.querySelector('.search-box .orders-visually-hidden');
+    const style = getComputedStyle(label);
+    expect(label.textContent).toBe('Search orders');
+    expect(style.position).toBe('absolute');
+    expect(style.width).toBe('1px');
+    expect(style.height).toBe('1px');
+    expect(style.overflow).toBe('hidden');
+    expect(fixture.nativeElement.querySelectorAll('.sr-only').length).toBe(0);
+  });
+
+  it('stacks cards and search controls when the available content area is narrow', async () => {
+    const host = fixture.nativeElement as HTMLElement;
+    host.style.width = '360px';
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    const cards = Array.from(host.querySelectorAll('.metric')) as HTMLElement[];
+    expect(cards[1].getBoundingClientRect().top).toBeGreaterThan(cards[0].getBoundingClientRect().bottom);
+    const content = host.querySelector('.orders-workspace')!.getBoundingClientRect();
+    cards.forEach(card => expect(card.getBoundingClientRect().right).toBeLessThanOrEqual(content.right));
+    const search = host.querySelector('.search-box')!.getBoundingClientRect();
+    const submit = host.querySelector('.search-row button[type="submit"]')!.getBoundingClientRect();
+    expect(submit.top).toBeGreaterThanOrEqual(search.bottom);
+    expect(host.querySelector('.filters-grid')!.getBoundingClientRect().right).toBeLessThanOrEqual(content.right);
+  });
 });

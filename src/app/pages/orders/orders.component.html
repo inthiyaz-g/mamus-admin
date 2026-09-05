@@ -1,146 +1,89 @@
-<!-- 
-  Authors : initappz (Rahul Jograna)
-  Website : https://initappz.com/
-  App Name : Grocery Delivery App Ionic7 Capacitor
-  This App Template Source code is licensed as per the
-  terms found in the Website https://initappz.com/license
-  Copyright and Good Faith Purchasers © 2024-present initappz.
--->
 <ngx-spinner type="ball-scale-multiple"></ngx-spinner>
-<div class="animated fadeIn">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header">
-                    {{util.translate('All Orders')}}
-                    <div class="card-header-actions">
-                        <button type="submit" (click)="importCSV()" class="btn btn-sm btn-warning"
-                            style="float: right;margin: 0px 5px;">
-                            {{util.translate('Bulk CSV Upload')}}
-                        </button> &nbsp;
-                        <button type="submit" (click)="exportCSV()" class="btn btn-sm btn-success"
-                            style="float: right;margin: 0px 5px;">
-                            {{util.translate('Export as CSV')}}
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body">
-
-
-                    <div class="row flex_row">
-                        <div class="col-lg-10">
-                            <input type="number" class="form-control" id="name" [(ngModel)]="inputString"
-                                [placeholder]="util.translate('Search Order By Id')">
-                        </div>
-                        <div class="col-lg-2">
-                            <button type="submit" (click)="search()" class="btn btn-sm btn-dark">
-                                {{util.translate('Search')}}
-                            </button>
-                            <button type="submit" (click)="clean()" class="btn btn-sm btn-light"
-                                style="margin:0px 5px;">
-                                {{util.translate('Clean')}}
-                            </button>
-                        </div>
-                    </div>
-
-
-                    <div *ngIf="!orders?.length && dummy.length == 0" style="text-align: center;">
-                        <p>{{util.translate('No Data Found..')}}</p>
-                    </div>
-
-                    <table class="table table-striped">
-                        <thead *ngIf="orders?.length">
-                            <tr>
-                                <th>{{util.translate('Id')}}</th>
-                                <th>{{util.translate('Username')}}</th>
-                                <th>{{util.translate('Store')}}</th>
-                                <th>{{util.translate('Date')}}</th>
-                                <th>{{util.translate('Total')}}</th>
-                                <th>{{util.translate('Delivery')}}</th>
-                                <th>{{util.translate('Order To')}}</th>
-                                <th>{{util.translate('Action')}}</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            <tr *ngFor="let item of dummy">
-                                <td *ngFor="let item of [1,2,3,4,5,6,7,8]">
-                                    <ngx-skeleton-loader count="1" appearance="line"></ngx-skeleton-loader>
-                                </td>
-                            </tr>
-                            <tr
-                                *ngFor="let item of orders | paginate: { id: 'server', itemsPerPage: 10, currentPage: page, totalItems: totalOrders }">
-                                <td> {{item.id}} </td>
-                                <td>{{item.first_name}} {{item.last_name}}</td>
-                                <td> <label> <span *ngFor="let store of item.storeInfo;let i = index"> {{store.name}}
-                                            {{i == item.storeInfo.length -1 ? '' : ',&nbsp;' }} </span> </label>
-                                </td>
-                                <td>{{item.date_time}}</td>
-                                <td>
-                                    <span *ngIf="util.cside =='left'">
-                                        {{util.currecny}} {{item.grand_total}}
-                                    </span>
-                                    <span *ngIf="util.cside =='right'">
-                                        {{item.grand_total}} {{util.currecny}}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="delivery-badge" [class.instant]="item.delivery_type === 'instant'"
-                                        [class.scheduled]="item.delivery_type !== 'instant'">
-                                        <i class="fa" [class.fa-bolt]="item.delivery_type === 'instant'"
-                                            [class.fa-calendar]="item.delivery_type !== 'instant'"></i>
-                                        {{deliveryLabel(item)}}
-                                    </span>
-                                </td>
-                                <td> {{item.order_to}} </td>
-                                <td>
-                                    <c-badge color="info" class="me-1 badge bg-info" (click)="viewsInfo(item.id)">
-                                        {{util.translate('View')}}
-                                    </c-badge>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <div *ngIf="orders?.length > 0">
-                        <pagination-controls id="server" (pageChange)="pageChange($event)"></pagination-controls>
-                    </div>
-
-                </div>
-            </div>
-        </div>
+<section class="orders-workspace animated fadeIn">
+  <header class="workspace-header">
+    <div><p class="eyebrow">ORDER MANAGEMENT</p><h1>Orders</h1><p>Every store. Every delivery. One place to stay on track.</p></div>
+    <div class="header-actions">
+      <button class="action-button" (click)="importCSV()"><i class="fa fa-upload" aria-hidden="true"></i> Import CSV</button>
+      <button class="action-button" (click)="exportCSV()" [disabled]="!orders.length || dummy.length > 0"><i class="fa fa-download" aria-hidden="true"></i> Export this page</button>
+      <button class="action-button primary" (click)="getOrders()" [disabled]="dummy.length > 0"><i class="fa fa-refresh" aria-hidden="true"></i> Refresh</button>
     </div>
+  </header>
+
+  <div class="metrics" aria-label="Order quick filters">
+    <button class="metric today" [class.selected]="dueFilter === 'today'" [attr.aria-pressed]="dueFilter === 'today'" (click)="selectDue('today')">
+      <span class="metric-icon"><i class="fa fa-calendar-check-o" aria-hidden="true"></i></span>
+      <span><span class="metric-label">Need to deliver today</span><strong>{{summary['due_today'] || 0}}</strong><small>Open orders due {{formatDate(today, false)}}</small></span>
+      <i class="fa fa-arrow-right metric-arrow" aria-hidden="true"></i>
+    </button>
+    <button class="metric overdue" [class.selected]="dueFilter === 'overdue'" [attr.aria-pressed]="dueFilter === 'overdue'" (click)="selectDue('overdue')">
+      <span class="metric-icon"><i class="fa fa-exclamation-circle" aria-hidden="true"></i></span>
+      <span><span class="metric-label">Overdue</span><strong>{{summary['overdue'] || 0}}</strong><small>Past delivery date · still open</small></span>
+      <i class="fa fa-arrow-right metric-arrow" aria-hidden="true"></i>
+    </button>
+    <button class="metric progress" [class.selected]="statusFilter === 'in_progress'" (click)="dueFilter = ''; selectStatus('in_progress')">
+      <span class="metric-icon"><i class="fa fa-truck" aria-hidden="true"></i></span>
+      <span><span class="metric-label">In progress</span><strong>{{summary['in_progress'] || 0}}</strong><small>Accepted, preparing or on the way</small></span>
+      <i class="fa fa-arrow-right metric-arrow" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="orders-panel">
+    <form class="filter-panel" (ngSubmit)="search()">
+      <div class="search-row">
+        <label class="search-box"><i class="fa fa-search" aria-hidden="true"></i><span class="sr-only">Search orders</span>
+          <input type="search" name="search" [(ngModel)]="inputString" placeholder="Search order ID, customer, mobile or store" maxlength="120">
+        </label>
+        <button class="action-button primary" type="submit">Search orders</button>
+        <button class="action-button" type="button" (click)="clean()" [disabled]="!hasFilters">Reset filters</button>
+      </div>
+      <div class="filters-grid">
+        <label>Store / Restaurant<select name="store" [(ngModel)]="storeId" (ngModelChange)="search()"><option value="">All stores &amp; restaurants</option><option *ngFor="let store of stores" [value]="store.uid">{{store.name}}</option></select></label>
+        <label>Delivery type<select name="delivery" [(ngModel)]="deliveryType" (ngModelChange)="search()"><option value="">All delivery types</option><option value="instant">Instant delivery</option><option value="scheduled">Scheduled delivery</option></select></label>
+        <label>Delivery due<select name="due" [(ngModel)]="dueFilter" (ngModelChange)="search()"><option value="">Any delivery day</option><option value="today">Need to deliver today</option><option value="tomorrow">Deliver tomorrow</option><option value="overdue">Overdue</option><option value="upcoming">After tomorrow</option></select></label>
+        <label>Status<select name="status" [(ngModel)]="statusFilter" (ngModelChange)="search()"><option value="">All statuses</option><option value="new">New</option><option value="in_progress">In progress</option><option value="accepted">Accepted</option><option value="ongoing">Out for delivery</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option><option value="rejected">Rejected</option><option value="refunded">Refunded</option><option value="partially_completed">Partially completed</option><option value="unknown">Unknown / needs review</option></select></label>
+      </div>
+      <div class="date-row">
+        <label>Date range for<select name="dateField" [(ngModel)]="dateField" (ngModelChange)="search()"><option value="ordered">Order placed date</option><option value="due">Delivery due date</option></select></label>
+        <label>From<input type="date" name="dateFrom" [(ngModel)]="dateFrom" (ngModelChange)="search()" [attr.max]="dateTo || null"></label>
+        <label>To<input type="date" name="dateTo" [(ngModel)]="dateTo" (ngModelChange)="search()" [attr.min]="dateFrom || null"></label>
+        <p><i class="fa fa-clock-o" aria-hidden="true"></i> All dates in IST<br><span>“Tomorrow” becomes “Due today” automatically.</span></p>
+      </div>
+      <p class="inline-error" role="alert" *ngIf="dateError">{{dateError}}</p>
+    </form>
+    <nav class="status-tabs" aria-label="Filter orders by status">
+      <button *ngFor="let tab of tabs" [class.active]="statusFilter === tab.key" [attr.aria-pressed]="statusFilter === tab.key" (click)="selectStatus(tab.key)">{{tab.label}}<span>{{summary[tab.count] || 0}}</span></button>
+    </nav>
+    <div class="results-meta"><span aria-live="polite">{{dummy.length ? 'Loading orders…' : totalOrders + ' matching orders'}} <span *ngIf="dueFilter" class="active-filter">{{dueFilter === 'today' ? 'Due today' : dueFilter}}</span></span><small>Counts reflect search, store, type and date filters.</small></div>
+
+    <div class="empty-state" *ngIf="errorMessage && !dummy.length" role="alert"><i class="fa fa-exclamation-circle" aria-hidden="true"></i><h2>Unable to load orders</h2><p>{{errorMessage}}</p><button class="action-button primary" (click)="getOrders()">Try again</button></div>
+    <div class="empty-state" *ngIf="!orders.length && !dummy.length && !errorMessage"><i class="fa fa-search" aria-hidden="true"></i><h2>No matching orders</h2><p>Try another store, delivery day or search term.</p><button class="action-button" (click)="clean()" *ngIf="hasFilters">Clear all filters</button></div>
+
+    <div class="table-scroll" [attr.aria-busy]="dummy.length > 0">
+      <table class="orders-table" *ngIf="orders.length || dummy.length">
+        <thead><tr><th>Order / Customer</th><th>Store / Restaurant</th><th>Delivery schedule</th><th>Status / Delivered at</th><th>Total</th><th><span class="sr-only">Action</span></th></tr></thead>
+        <tbody>
+          <ng-container *ngIf="dummy.length; else loadedOrders"><tr *ngFor="let placeholder of dummy"><td *ngFor="let column of [1,2,3,4,5,6]"><ngx-skeleton-loader count="2" appearance="line"></ngx-skeleton-loader></td></tr></ng-container>
+          <ng-template #loadedOrders>
+            <tr *ngFor="let item of orders | paginate: { id: 'server', itemsPerPage: 10, currentPage: page, totalItems: totalOrders }">
+              <td><button class="order-link" (click)="viewsInfo(item.id)">#{{item.id}}</button><strong class="customer-name">{{item.first_name || 'Customer'}} {{item.last_name}}</strong><small *ngIf="item.mobile">{{item.mobile}}</small><small class="placed-date">Ordered {{formatDate(item.placed_at)}}</small></td>
+              <td class="store-cell"><span class="store-name">{{getNames(item.storeInfo) || 'Store not available'}}</span><small class="destination"><i class="fa" [class.fa-home]="item.order_to === 'home'" [class.fa-shopping-bag]="item.order_to !== 'home'" aria-hidden="true"></i> {{item.order_to === 'home' ? 'Home delivery' : 'Store pickup'}}</small></td>
+              <td><span class="delivery-badge" [class.instant]="item.delivery_type === 'instant'"><i class="fa" [class.fa-bolt]="item.delivery_type === 'instant'" [class.fa-calendar]="item.delivery_type !== 'instant'" aria-hidden="true"></i>{{deliveryLabel(item)}}</span><strong class="due-label" [class.due-today]="item.due_bucket === 'today'" [class.due-overdue]="item.due_bucket === 'overdue'">{{dueLabel(item)}}</strong><small>{{formatDate(item.delivery_due_date, false)}}</small></td>
+              <td><span class="order-status-badge" [ngClass]="'status-' + orderStatus(item)"><span class="status-dot"></span>{{orderStatusLabel(item)}}</span><ng-container *ngIf="item.delivered_at"><small class="delivered-time">Delivered {{formatDate(item.delivered_at)}}</small><small *ngIf="item.delivered_at_source === 'history'">From order history</small></ng-container><small *ngIf="!item.delivered_at && orderStatus(item) === 'delivered'">Delivery time not recorded</small><small *ngIf="orderStatus(item) === 'partially_completed'">Some stores delivered; others closed</small></td>
+              <td class="amount"><span *ngIf="util.cside !== 'right'">{{util.currecny}} </span>{{(item.grand_total || 0) | number:'1.2-2'}}<span *ngIf="util.cside === 'right'"> {{util.currecny}}</span></td>
+              <td><button class="view-button" (click)="viewsInfo(item.id)" [attr.aria-label]="'View order ' + item.id">View <i class="fa fa-arrow-right" aria-hidden="true"></i></button></td>
+            </tr>
+          </ng-template>
+        </tbody>
+      </table>
+    </div>
+    <footer class="table-footer" *ngIf="!dummy.length && !errorMessage"><span>Showing {{rangeStart}}–{{rangeEnd}} of {{totalOrders}}<small *ngIf="lastUpdated">Updated {{lastUpdated | date:'shortTime'}}</small></span><pagination-controls *ngIf="totalOrders > 10" id="server" (pageChange)="pageChange($event)" [autoHide]="true" [responsive]="true"></pagination-controls></footer>
+  </div>
+</section>
+
+<div bsModal #myModal3="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="csvModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-warning" role="document"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="csvModalTitle">Bulk CSV Upload</h5><button type="button" class="close" (click)="myModal3.hide()" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
+    <div class="modal-body"><label for="orderCsv">Choose an orders CSV file</label><input (change)="uploadCSV($event.target.files)" type="file" id="orderCsv" accept=".csv"><button type="button" class="btn btn-warning mt-3" (click)="downloadSample()">Download Sample CSV</button></div>
+    <div class="modal-footer"><button type="button" class="btn btn-secondary" (click)="myModal3.hide()">Close</button></div>
+  </div></div>
 </div>
-
-<div bsModal #myModal3="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-warning" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">{{util.translate('Bulk CSV Upload')}} </h5>
-                <button type="button" class="close" (click)="myModal3.hide()" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body long_content">
-                <div class="form-group row">
-                    <div class="col-md-12">
-                        <input (change)="uploadCSV($event.target.files)" type="file" id="file-input" name="file-input"
-                            accept=".csv">
-                    </div>
-                </div>
-                <button type="button" class="btn btn-warning" style="float: right;" (click)="downloadSample()">
-                    {{util.translate('Download Sample CSV')}} &nbsp; <i class="fa fa-cloud-download"></i></button>
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary"
-                    (click)="myModal3.hide()">{{util.translate('Close')}}</button>
-
-                <button type="button" class="btn btn-warning" (click)="saveType()">
-                    {{util.translate('Save Changes')}}</button>
-            </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->

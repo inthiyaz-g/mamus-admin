@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 
 import { ManageUsersRoutingModule } from './manage-users-routing.module';
 import { ManageUsersComponent } from './manage-users.component';
+import { UserWalletComponent } from './user-wallet.component';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ModalModule } from 'ngx-bootstrap/modal';
@@ -20,7 +21,8 @@ import { TabsModule } from 'ngx-bootstrap/tabs';
 
 @NgModule({
   declarations: [
-    ManageUsersComponent
+    ManageUsersComponent,
+    UserWalletComponent
   ],
   imports: [
     CommonModule,

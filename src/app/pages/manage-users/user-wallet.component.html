@@ -1,0 +1,46 @@
+<section class="user-wallet" aria-label="User wallet" [attr.aria-busy]="loading">
+  <header class="wallet-heading">
+    <div><h2>Wallet details</h2><p>Balance and transaction history · Read only</p></div>
+    <button type="button" class="wallet-button" (click)="loadWallet()" [disabled]="loading" aria-label="Refresh wallet details">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 6a8 8 0 0 1 14 6M4 12a8 8 0 0 0 14 6"/></svg>Refresh
+    </button>
+  </header>
+
+  <div class="wallet-loading" *ngIf="loading && !summary" role="status">Loading wallet details…</div>
+  <div class="wallet-error" *ngIf="errorMessage" role="alert"><strong>Wallet unavailable</strong><p>{{errorMessage}}</p><button type="button" class="wallet-button" (click)="loadWallet()">Try again</button></div>
+
+  <ng-container *ngIf="summary && !errorMessage">
+    <div class="wallet-summary-grid">
+      <div class="wallet-balance">
+        <span class="wallet-balance-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 8V5H6a3 3 0 0 0 0 6h15v9H6a3 3 0 0 1-3-3V8m18 6h-5v4h5m-3-2h.01"/></svg></span>
+        <div><span class="wallet-eyebrow">Available balance</span><strong>{{money(summary.balance)}}</strong><small>User’s spendable wallet balance</small></div>
+      </div>
+      <div class="wallet-total"><span class="wallet-credit">+ Total credited</span><strong>{{money(summary.total_credited)}}</strong><small>Confirmed credits · all time</small></div>
+      <div class="wallet-total"><span class="wallet-debit">− Total debited</span><strong>{{money(summary.total_debited)}}</strong><small>Confirmed debits · all time</small></div>
+    </div>
+    <p class="wallet-pending-note" *ngIf="summary.pending_count">{{summary.pending_count}} pending transaction(s). Pending entries are not included in the balance or confirmed totals.</p>
+
+    <div class="wallet-history">
+      <div class="wallet-history-heading"><h3>Transactions <span>{{summary.transaction_count}}</span></h3><small>Newest first · Dates in IST</small></div>
+      <div class="wallet-filters">
+        <label>Transaction type<select [(ngModel)]="typeFilter" (ngModelChange)="filterChanged()" [disabled]="loading"><option value="">All transactions</option><option value="deposit">Credits</option><option value="withdraw">Debits</option></select></label>
+        <label>Status<select [(ngModel)]="confirmation" (ngModelChange)="filterChanged()" [disabled]="loading"><option value="">All statuses</option><option value="confirmed">Confirmed</option><option value="pending">Pending</option></select></label>
+        <button type="button" class="wallet-reset" (click)="resetFilters()" [disabled]="loading || (!typeFilter && !confirmation)">Reset</button>
+      </div>
+      <p class="wallet-loading" *ngIf="loading" role="status">Updating transactions…</p>
+      <ng-container *ngIf="!loading">
+        <div class="wallet-empty" *ngIf="!transactions.length"><strong>{{summary.transaction_count ? 'No matching transactions' : 'No wallet transactions yet'}}</strong><p>{{summary.transaction_count ? 'Try a different type or status filter.' : 'Credits and deductions will appear here when the wallet is used.'}}</p></div>
+        <div class="wallet-entries" *ngIf="transactions.length" role="list" aria-label="Wallet transactions">
+          <article *ngFor="let transaction of transactions" class="wallet-entry" role="listitem">
+            <span class="wallet-direction" [class.is-debit]="transaction.type === 'withdraw'" aria-hidden="true">{{transaction.type === 'deposit' ? '+' : '−'}}</span>
+            <div class="wallet-entry-detail"><div class="wallet-entry-title"><strong>{{transaction.description}}</strong><span class="wallet-confirmation" [class.is-pending]="!transaction.confirmed">{{transaction.confirmed ? 'Confirmed' : 'Pending'}}</span></div>
+              <time>{{date(transaction.created_at)}}</time><small class="wallet-reference">Ref: {{transaction.reference || transaction.id}}</small>
+            </div>
+            <div class="wallet-entry-amount" [class.is-debit]="transaction.type === 'withdraw'"><strong>{{transaction.type === 'deposit' ? '+' : '−'}}{{money(transaction.amount, true)}}</strong><small>{{transaction.type === 'deposit' ? 'Credit' : 'Debit'}}</small></div>
+          </article>
+        </div>
+      </ng-container>
+      <footer class="wallet-pagination"><span aria-live="polite">{{loading ? 'Loading…' : 'Showing ' + rangeStart + '–' + rangeEnd + ' of ' + total}}<small *ngIf="updatedAt">Refreshed {{updatedAt | date:'shortTime'}}</small></span><div *ngIf="total > perPage"><button type="button" class="wallet-button" (click)="changePage(page - 1)" [disabled]="loading || page <= 1" aria-label="Previous wallet transactions">Previous</button><span>{{page}} / {{lastPage}}</span><button type="button" class="wallet-button" (click)="changePage(page + 1)" [disabled]="loading || page >= lastPage" aria-label="Next wallet transactions">Next</button></div></footer>
+    </div>
+  </ng-container>
+</section>

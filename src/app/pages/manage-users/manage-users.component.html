@@ -80,6 +80,10 @@
                             <div class="card-body">
                                 <tabset>
                                     <tab>
+                                        <ng-template tabHeading>{{util.translate('Wallet')}}</ng-template>
+                                        <app-user-wallet [userId]="uid"></app-user-wallet>
+                                    </tab>
+                                    <tab>
                                         <ng-template tabHeading><i class="icon-basket"></i> {{util.translate('Orders')}}
                                         </ng-template>
                                         <div class="orders">

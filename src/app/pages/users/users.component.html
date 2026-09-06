@@ -18,36 +18,51 @@
                             style="float: right;margin: 0px 5px;">
                             {{util.translate('Bulk CSV Upload')}}
                         </button> &nbsp;
-                        <button type="submit" (click)="exportCSV()" class="btn btn-sm btn-success"
+                        <button type="button" (click)="exportCSV()" [disabled]="loading || !users.length" class="btn btn-sm btn-success"
                             style="float: right;margin: 0px 5px;">
-                            {{util.translate('Export as CSV')}}
+                            {{util.translate('Export this page')}}
                         </button>
                     </div>
                 </div>
                 <div class="card-body">
 
 
-                    <div class="row flex_row">
-                        <div class="col-lg-10">
-                            <input type="text" class="form-control" id="name"
-                                [placeholder]="util.translate('Search User')" [(ngModel)]="inputString">
+                    <form class="users-search" (ngSubmit)="search()" role="search" aria-label="Search users">
+                        <div class="users-search-field">
+                            <label for="users-search-input">{{util.translate('Find a user')}}</label>
+                            <div class="users-search-input">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+                                <input type="search" id="users-search-input" name="userSearch" maxlength="150" autocomplete="off"
+                                    [placeholder]="util.translate('Name, mobile, email or user ID')" [(ngModel)]="inputString"
+                                    aria-describedby="users-search-help">
+                            </div>
                         </div>
-                        <div class="col-lg-2">
-                            <button type="submit" (click)="search()" class="btn btn-sm btn-dark">
-                                {{util.translate('Search')}}
-                            </button>
-                            <button type="submit" (click)="clean()" class="btn btn-sm btn-light"
-                                style="margin:0px 5px;">
-                                {{util.translate('Clean')}}
-                            </button>
+                        <div class="users-search-actions">
+                            <button type="submit" class="users-search-submit" [disabled]="loading">{{util.translate('Search users')}}</button>
+                            <button type="button" class="users-search-reset" (click)="clean()" [disabled]="!inputString && !appliedSearch">{{util.translate('Clear')}}</button>
                         </div>
+                        <p id="users-search-help">{{util.translate('Search across all users. Press Enter or select Search users.')}}</p>
+                    </form>
+
+                    <div class="users-results-summary" aria-live="polite" role="status">
+                        <span *ngIf="loading">{{util.translate('Searching users…')}}</span>
+                        <ng-container *ngIf="!loading && !errorMessage">
+                            <span><strong>{{totalUsers | number}}</strong> {{util.translate(appliedSearch ? 'matching users' : 'users')}}<span *ngIf="appliedSearch"> {{util.translate('for')}} “{{appliedSearch}}”</span></span>
+                            <small *ngIf="totalUsers">{{util.translate('Showing')}} {{rangeStart}}–{{rangeEnd}}</small>
+                        </ng-container>
                     </div>
 
-
-                    <div *ngIf="!users?.length && dummy.length == 0" style="text-align: center;">
-                        <p>{{util.translate('No Data Found..')}}</p>
+                    <div *ngIf="errorMessage" class="users-search-empty users-search-error" role="alert">
+                        <p>{{util.translate(errorMessage)}}</p>
+                        <button type="button" class="users-search-reset" (click)="getAllUsers()">{{util.translate('Try again')}}</button>
+                    </div>
+                    <div *ngIf="!users.length && !loading && !errorMessage" class="users-search-empty">
+                        <strong>{{util.translate(appliedSearch ? 'No matching users' : 'No users yet')}}</strong>
+                        <p>{{util.translate(appliedSearch ? 'Check the spelling or try another name, mobile, email or user ID.' : 'Registered users will appear here.')}}</p>
+                        <button *ngIf="appliedSearch" type="button" class="users-search-reset" (click)="clean()">{{util.translate('Show all users')}}</button>
                     </div>
 
+                    <div class="users-table-scroll" [attr.aria-busy]="loading">
                     <table class="table table-striped">
                         <thead *ngIf="users?.length">
                             <tr>
@@ -94,6 +109,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    </div>
 
                     <div *ngIf="users?.length > 0">
                         <pagination-controls id="server" (pageChange)="pageChange($event)"></pagination-controls>

@@ -6,7 +6,7 @@
   terms found in the Website https://initappz.com/license
   Copyright and Good Faith Purchasers © 2024-present initappz.
 */
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { NavigationExtras, Router } from '@angular/router';
 import { ModalDirective } from 'ngx-bootstrap/modal';
 import { ApiService } from 'src/app/services/api.service';
@@ -18,81 +18,74 @@ import Swal from 'sweetalert2';
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.scss']
 })
-export class UsersComponent implements OnInit {
+export class UsersComponent implements OnInit, OnDestroy {
   @ViewChild('myModal3') public myModal3: ModalDirective;
   dummy: any[] = [];
   totalUsers: any = 0;
   users: any[] = [];
   page: number = 1;
-  inputString: any = '';
+  inputString = '';
+  appliedSearch = '';
+  loading = false;
+  errorMessage = '';
+  private requestId = 0;
   constructor(
     private router: Router,
     public api: ApiService,
-    public util: UtilService) {
+    public util: UtilService) {}
+
+  ngOnInit(): void {
     this.getAllUsers();
   }
 
-  ngOnInit(): void {
-  }
+  ngOnDestroy(): void { this.requestId++; }
 
-  getAllUsers() {
+  async getAllUsers(): Promise<void> {
+    const request = ++this.requestId;
+    this.loading = true;
+    this.errorMessage = '';
     this.dummy = Array(10);
     this.users = [];
-    this.api.get_private('v1/users/getAll?page=' + (this.page - 1)).then((data: any) => {
-      this.dummy = [];
-      if (data && data.status && data.status == 200 && data.success) {
-        console.log(">>>>>", data);
-        if (data && data.data.length > 0) {
-          this.users = data.data;
-          this.totalUsers = data.totalUsers;
-          console.log("======", this.users);
-        }
+    const params = new URLSearchParams({ page: String(this.page - 1) });
+    if (this.appliedSearch) params.set('q', this.appliedSearch);
+    try {
+      const data: any = await this.api.get_private('v1/users/getAll?' + params.toString());
+      if (request !== this.requestId) return;
+      if (!data?.success || data.status !== 200 || !Array.isArray(data.data)) {
+        throw new Error('User search unavailable');
       }
-    }, error => {
-      this.dummy = [];
-      console.log('Error', error);
+      this.users = data.data;
+      this.totalUsers = Number(data.totalUsers) || 0;
+      const lastPage = Math.max(1, Math.ceil(this.totalUsers / 10));
+      if (this.page > lastPage) {
+        this.page = lastPage;
+        await this.getAllUsers();
+      }
+    } catch (error) {
+      if (request !== this.requestId) return;
+      this.totalUsers = 0;
+      this.errorMessage = 'Users could not be loaded. Please try again.';
       this.util.apiErrorHandler(error);
-    }).catch(error => {
-      this.dummy = [];
-      console.log('Err', error);
-      this.util.apiErrorHandler(error);
-    });
+    } finally {
+      if (request === this.requestId) { this.dummy = []; this.loading = false; }
+    }
   }
 
-  pageChange(event: any) {
-    console.log(event);
-    this.page = event;
-    console.log('page->', this.page)
+  pageChange(page: number) {
+    if (this.loading || page < 1 || page > Math.max(1, Math.ceil(this.totalUsers / 10))) return;
+    this.page = page;
     this.getAllUsers();
   }
 
   search() {
-    if (this.inputString != '') {
-      console.log('search data', this.inputString);
-      this.totalUsers = 0;
-      this.page = 0;
-      this.dummy = Array(10);
-      this.users = [];
-      this.api.post_private('v1/users/searchAdminWithId', { id: this.inputString }).then((data: any) => {
-        this.dummy = [];
-        if (data && data.status && data.status == 200 && data.success) {
-          console.log(">>>>>", data);
-          if (data && data.data.length > 0) {
-            this.users = data.data;
-            console.log("---", this.users);
-          }
-        }
-      }, error => {
-        this.dummy = [];
-        console.log('Error', error);
-        this.util.apiErrorHandler(error);
-      }).catch(error => {
-        this.dummy = [];
-        console.log('Err', error);
-        this.util.apiErrorHandler(error);
-      });
-    }
+    this.inputString = this.inputString.trim().replace(/\s+/g, ' ');
+    this.appliedSearch = this.inputString;
+    this.page = 1;
+    this.getAllUsers();
   }
+
+  get rangeStart(): number { return this.totalUsers ? (this.page - 1) * 10 + 1 : 0; }
+  get rangeEnd(): number { return Math.min(this.page * 10, this.totalUsers); }
 
   statusUpdate(item: any) {
     console.log(item);
@@ -239,6 +232,7 @@ export class UsersComponent implements OnInit {
 
   clean() {
     this.inputString = '';
+    this.appliedSearch = '';
     this.page = 1;
     this.getAllUsers();
   }

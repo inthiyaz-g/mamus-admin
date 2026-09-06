@@ -6,3 +6,39 @@
   terms found in the Website https://initappz.com/license
   Copyright and Good Faith Purchasers © 2024-present initappz.
 */
+.users-search {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px;
+  padding: 20px; margin-bottom: 20px; border: 1px solid #e2e7ef; border-radius: 14px; background: #fafbfd;
+  > p { flex: 1 0 100%; margin: 0; color: #758298; font-size: 12px; }
+}
+.users-search-field { flex: 1 1 280px; min-width: 0;
+  label { display: block; margin-bottom: 8px; color: #3e4c62; font-size: 13px; font-weight: 600; }
+}
+.users-search-input { display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 13px;
+  background: #fff; border: 1px solid #d7dfeb; border-radius: 9px;
+  &:focus-within { border-color: #df334b; box-shadow: 0 0 0 3px #e82b4812; }
+  svg { width: 19px; height: 19px; flex: 0 0 19px; fill: none; stroke: #8390a3; stroke-width: 1.8; stroke-linecap: round; }
+  input { flex: 1; width: 100%; min-width: 0; min-height: 44px; border: 0; outline: 0; background: transparent; color: #29384e; font-size: 14px; }
+}
+.users-search-actions { display: flex; gap: 10px; }
+.users-search-submit, .users-search-reset {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 10px 18px;
+  border: 1px solid #dce3ed; border-radius: 9px; background: #fff; color: #4b5c75; font-size: 13px; font-weight: 600; cursor: pointer;
+  &:focus-visible { outline: 3px solid #a9c9f6; outline-offset: 2px; }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+  &:hover:not(:disabled) { background: #f1f4f8; }
+}
+.users-search-submit { color: #fff; background: #e62943; border-color: #e62943; &:hover:not(:disabled) { background: #ca1d36; } }
+.users-results-summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; min-height: 30px; margin-bottom: 14px; color: #627189; font-size: 13px; overflow-wrap: anywhere;
+  strong { color: #25364f; } small { font-size: 12px; }
+}
+.users-search-empty { padding: 32px 18px; text-align: center; color: #65748b; background: #fafbfd; border: 1px dashed #dfe5ee; border-radius: 12px;
+  strong { color: #3d4e66; font-size: 16px; } p { margin: 10px 0 16px; font-size: 13px; }
+}
+.users-search-error { background: #fff7f7; border-color: #f1cdd3; }
+.users-table-scroll { max-width: 100%; overflow-x: auto; .table { margin-bottom: 16px; } }
+@media (max-width: 600px) {
+  .users-search { padding: 14px; }
+  .users-search-field { flex-basis: 100%; }
+  .users-search-actions { width: 100%; button { flex: 1; } }
+}

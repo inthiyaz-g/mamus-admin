@@ -31,6 +31,7 @@ export class OrderDetailsComponent implements OnInit {
   orderAt: any;
   address: any;
   userInfo: any;
+  storeInfo: any[] = [];
   driverInfo: any;
   changeStatusOrder: any;
   drivers: any[] = [];
@@ -220,6 +221,7 @@ export class OrderDetailsComponent implements OnInit {
           console.log("wallet discount", this.orderWalletDiscount);
 
           this.userInfo = data.user;
+          this.storeInfo = Array.isArray(data.storeInfo) ? data.storeInfo : [];
 
           if (this.orderAt == "home") {
             const address = JSON.parse(info.address);

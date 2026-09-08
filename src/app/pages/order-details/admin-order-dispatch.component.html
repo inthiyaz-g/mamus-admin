@@ -1,0 +1,42 @@
+<section class="admin-dispatch" aria-label="Admin order controls" [attr.aria-busy]="loading || busy">
+  <header class="dispatch-header">
+    <div class="dispatch-title">
+      <span class="dispatch-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4v10l-8 4-8-4V7l8-4Zm-8 4 8 4 8-4M12 11v10m-4-16 8 4"/></svg></span>
+      <div><span class="dispatch-eyebrow">{{util.translate('ADMIN CONTROLS')}}</span><h2>{{util.translate('Accept & assign delivery')}}</h2><p>{{util.translate('Manage each store’s order directly from the admin panel.')}}</p></div>
+    </div>
+    <button type="button" class="dispatch-button dispatch-secondary" (click)="refresh()" [disabled]="loading || busy" aria-label="Refresh order dispatch">{{util.translate('Refresh')}}</button>
+  </header>
+  <p *ngIf="loading" class="dispatch-message" role="status">{{util.translate('Checking order status and available riders…')}}</p>
+  <p *ngIf="errorMessage" class="dispatch-message dispatch-error" role="alert">{{util.translate(errorMessage)}}</p>
+  <p *ngIf="successMessage" class="dispatch-message dispatch-success" role="status">{{util.translate(successMessage)}}</p>
+  <ng-container *ngIf="data">
+    <div class="dispatch-context"><span [class.dispatch-instant]="data.delivery_type === 'instant'">{{util.translate(data.delivery_type === 'instant' ? 'Instant delivery' : 'Scheduled delivery')}}</span><small>{{util.translate(data.order_to === 'home' ? 'Home delivery' : 'Store pickup')}}</small></div>
+    <p *ngIf="!data.stores.length" class="dispatch-message">{{util.translate('No store information is available for this order.')}}</p>
+    <article *ngFor="let store of data.stores" class="dispatch-store">
+      <div class="dispatch-store-heading"><div><h3>{{store.store_name}}</h3><small>{{util.translate('Store ID')}} #{{store.store_id}}</small></div><span class="dispatch-status" [class.dispatch-status-accepted]="store.status === 'accepted'" [class.dispatch-status-assigned]="!!store.assigned_rider">{{util.translate(statusLabel(store.status))}}</span></div>
+      <div *ngIf="store.assigned_rider" class="dispatch-assigned"><span class="dispatch-avatar" aria-hidden="true">{{store.assigned_rider.name?.charAt(0) || 'R'}}</span><div><small>{{util.translate('Assigned rider')}}</small><strong>{{store.assigned_rider.name}}</strong><span>{{store.assigned_rider.mobile}}</span></div><span class="dispatch-check" aria-hidden="true">✓</span></div>
+      <p *ngIf="store.blocked_reason" class="dispatch-reason">{{util.translate(store.blocked_reason)}}</p>
+      <ng-container *ngIf="pending?.store?.store_id !== store.store_id">
+        <div *ngIf="store.can_accept" class="dispatch-accept-row"><p>{{util.translate('Accept this store’s order to begin preparing it.')}}</p><button type="button" class="dispatch-button dispatch-primary" (click)="prepareAccept(store)" [disabled]="loading || busy || !!pending">{{util.translate('Accept order')}}</button></div>
+        <div *ngIf="store.can_assign" class="dispatch-rider-picker">
+          <label [attr.for]="'dispatch-rider-' + store.store_id">{{util.translate('Available rider')}} <span>({{store.available_riders.length}})</span></label>
+          <div *ngIf="store.available_riders.length" class="dispatch-select-row">
+            <select [id]="'dispatch-rider-' + store.store_id" [(ngModel)]="selectedRiders[store.store_id]" [disabled]="loading || busy || !!pending">
+              <option [ngValue]="undefined" disabled>{{util.translate('Choose a rider')}}</option>
+              <option *ngFor="let rider of store.available_riders" [value]="rider.id">{{rider.name}}{{rider.mobile ? ' · ' + rider.mobile : ''}}</option>
+            </select>
+            <button type="button" class="dispatch-button dispatch-primary" (click)="prepareAssign(store)" [disabled]="loading || busy || !!pending || !selectedRiders[store.store_id]">{{util.translate('Assign rider')}}</button>
+          </div>
+          <p *ngIf="!store.available_riders.length" class="dispatch-no-riders">{{util.translate('No available riders in this store’s city. Ask a rider to go online, then refresh.')}}</p>
+          <small *ngIf="store.available_riders.length" class="dispatch-availability-note">{{util.translate('Only active, available riders in the store’s city are listed. Availability is checked again when you confirm.')}}</small>
+        </div>
+      </ng-container>
+      <div *ngIf="pending?.store?.store_id === store.store_id" class="dispatch-confirm" role="group" aria-label="Confirm order action">
+        <strong>{{util.translate(pending.action === 'accept' ? 'Accept this order?' : 'Confirm rider assignment?')}}</strong>
+        <p *ngIf="pending.action === 'accept'">{{util.translate('You are accepting the order on behalf of')}} <b>{{store.store_name}}</b>. {{util.translate(data.delivery_type === 'instant' ? 'This also approves instant delivery.' : 'The scheduled delivery date will not change.')}}</p>
+        <p *ngIf="pending.action === 'assign'">{{util.translate('Assign')}} <b>{{pending.rider.name}}</b> {{util.translate('to collect from')}} <b>{{store.store_name}}</b>? {{util.translate('The order will appear in the rider’s delivery app.')}}</p>
+        <div class="dispatch-confirm-actions"><button type="button" class="dispatch-button dispatch-secondary" (click)="cancel()" [disabled]="busy">{{util.translate('Cancel')}}</button><button type="button" class="dispatch-button dispatch-primary" (click)="confirm()" [disabled]="loading || busy">{{util.translate(busy ? 'Updating…' : pending.action === 'accept' ? 'Confirm acceptance' : 'Confirm assignment')}}</button></div>
+      </div>
+    </article>
+  </ng-container>
+</section>

@@ -137,6 +137,46 @@
     padding-bottom: 10px;
   }
 
+  .store-section {
+    .titles {
+      margin-bottom: 12px;
+    }
+  }
+
+  .store-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #e7edf8;
+    border-radius: 10px;
+    background: #f8fbff;
+    padding: 10px;
+
+    .store-cover {
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      border-radius: 9px;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+
+    .store-name {
+      margin: 0;
+      color: #1d5fa7;
+      font-family: "bold";
+      font-size: 14px;
+    }
+
+    .store-address {
+      margin: 3px 0 0;
+      color: #788292;
+      font-size: 12px;
+    }
+  }
+
   p {
     display: block;
   }

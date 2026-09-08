@@ -21,6 +21,7 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <app-admin-order-dispatch *ngIf="id" [orderId]="id" (changed)="getOrder()"></app-admin-order-dispatch>
                     <div *ngIf="!loaded"
                         style="display: flex;flex-direction: column;justify-content: center;align-items: center;">
                         <div class="loader">{{util.translate('Loading...')}} </div>
@@ -35,6 +36,19 @@
                                     <p class="res_name">{{userInfo.first_name}} {{userInfo.last_name}}
                                     </p>
                                     <p class="res_location">{{datetime}}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="store-section" *ngIf="storeInfo?.length">
+                            <p class="titles">{{util.translate('Store / Restaurant')}}</p>
+                            <div class="store-card" *ngFor="let store of storeInfo">
+                                <div class="store-cover"
+                                    [ngStyle]="{'background-image':'url('+api.mediaURL+store.cover+'),url(assets/imgs/user.png)'}">
+                                </div>
+                                <div>
+                                    <p class="store-name">{{store.name}}</p>
+                                    <p class="store-address">{{store.address || util.translate('Store partner')}}</p>
                                 </div>
                             </div>
                         </div>

@@ -11,13 +11,15 @@ import { CommonModule } from '@angular/common';
 
 import { OrderDetailsRoutingModule } from './order-details-routing.module';
 import { OrderDetailsComponent } from './order-details.component';
+import { AdminOrderDispatchComponent } from './admin-order-dispatch.component';
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { FormsModule } from '@angular/forms';
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { IconModule, IconSetService } from '@coreui/icons-angular';
 @NgModule({
   declarations: [
-    OrderDetailsComponent
+    OrderDetailsComponent,
+    AdminOrderDispatchComponent
   ],
   imports: [
     CommonModule,

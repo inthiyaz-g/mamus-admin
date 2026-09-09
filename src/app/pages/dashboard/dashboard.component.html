@@ -7,110 +7,83 @@
   Copyright and Good Faith Purchasers © 2024-present initappz.
 -->
 <ngx-spinner type="ball-scale-multiple"></ngx-spinner>
-<div class="animated fadeIn">
-    <div class="row mb-2">
-        <div class="col-sm-6 col-lg-3">
-            <div class="card text-white bg-info" style="cursor: pointer;" (click)="openPage('orders')">
-                <div class="card-body pb-2">
-
-                    <div class="text-value">{{order}} </div>
-                    <div> {{util.translate('Total Orders')}} </div>
-                </div>
-            </div>
+<div class="dashboard-page animated fadeIn">
+    <section class="dashboard-hero">
+        <div>
+            <p class="eyebrow">{{util.translate('Administration')}}</p>
+            <h1>{{util.translate('Operations dashboard')}}</h1>
+            <p>{{util.translate('Monitor orders, customers, stores and delivery operations in one place.')}}</p>
         </div>
-
-        <div class="col-sm-6 col-lg-3">
-            <div class="card text-white bg-primary" style="cursor: pointer;" (click)="openPage('users')">
-                <div class="card-body pb-2">
-
-                    <div class="text-value">{{users}} </div>
-                    <div>{{util.translate('Total Users')}} </div>
-                </div>
-
-            </div>
+        <div class="hero-actions">
+            <small *ngIf="lastUpdated">{{util.translate('Updated')}} {{lastUpdated | date:'shortTime'}}</small>
+            <button type="button" class="btn btn-light refresh-button" (click)="refreshDashboard()" [disabled]="isLoading">
+                <i class="fa" [ngClass]="isLoading ? 'fa-spinner fa-spin' : 'fa-refresh'"></i> {{util.translate('Refresh')}}
+            </button>
         </div>
+    </section>
 
-        <div class="col-sm-6 col-lg-3">
-            <div class="card text-white bg-warning" style="cursor: pointer;" (click)="openPage('stores')">
-                <div class="card-body pb-2">
-
-                    <div class="text-value">{{stores}} </div>
-                    <div>{{util.translate('Total Stores')}} </div>
-                </div>
-
-            </div>
+    <section class="row g-3 summary-grid">
+        <div class="col-sm-6 col-xl-3">
+            <button type="button" class="metric-card metric-orders" (click)="openPage('orders')">
+                <span class="metric-icon"><i class="fa fa-shopping-bag"></i></span>
+                <span><small>{{util.translate('All orders')}}</small><strong>{{order | number}}</strong><em>{{todayOrders | number}} {{util.translate('today')}}</em></span>
+                <i class="fa fa-arrow-right metric-arrow"></i>
+            </button>
         </div>
-
-        <div class="col-sm-6 col-lg-3">
-            <div class="card text-white bg-danger" style="cursor: pointer;" (click)="openPage('products')">
-                <div class="card-body pb-2">
-
-                    <div class="text-value">{{products}} </div>
-                    <div> {{util.translate('Total Products')}} </div>
-                </div>
-
-            </div>
+        <div class="col-sm-6 col-xl-3">
+            <button type="button" class="metric-card metric-users" (click)="openPage('users')">
+                <span class="metric-icon"><i class="fa fa-users"></i></span>
+                <span><small>{{util.translate('Customers')}}</small><strong>{{users | number}}</strong><em>{{util.translate('Registered users')}}</em></span>
+                <i class="fa fa-arrow-right metric-arrow"></i>
+            </button>
         </div>
-
-    </div>
-
-    <div class="row mb-2">
-
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <p class="card-title mb-0">{{util.translate('Today Orders Stats')}} </p>
-                            <div class="small text-muted">{{labelToday}}</div>
-                        </div>
-                    </div>
-                    <div class="chart-wrapper">
-                        <c-chart type="bar" [data]="chartBarDataAppointments"></c-chart>
-                    </div>
-                </div>
-            </div>
+        <div class="col-sm-6 col-xl-3">
+            <button type="button" class="metric-card metric-stores" (click)="openPage('stores')">
+                <span class="metric-icon"><i class="fa fa-store"></i></span>
+                <span><small>{{util.translate('Stores')}}</small><strong>{{stores | number}}</strong><em>{{util.translate('Manage partners')}}</em></span>
+                <i class="fa fa-arrow-right metric-arrow"></i>
+            </button>
         </div>
-
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <p class="card-title mb-0">{{util.translate('Weekly Orders Stats')}} </p>
-                            <div class="small text-muted">{{labelWeekly}}</div>
-                        </div>
-                    </div>
-                    <div class="chart-wrapper">
-                        <c-chart type="bar" [data]="chartBarData2Appointments"></c-chart>
-                    </div>
-                </div>
-            </div>
+        <div class="col-sm-6 col-xl-3">
+            <button type="button" class="metric-card metric-products" (click)="openPage('products')">
+                <span class="metric-icon"><i class="fa fa-cube"></i></span>
+                <span><small>{{util.translate('Products')}}</small><strong>{{products | number}}</strong><em>{{util.translate('Live catalogue')}}</em></span>
+                <i class="fa fa-arrow-right metric-arrow"></i>
+            </button>
         </div>
+    </section>
 
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <p class="card-title mb-0">{{util.translate('Monthly Orders Stats')}} </p>
-                            <div class="small text-muted">{{labelMonthly}}</div>
-                        </div>
-                    </div>
-                    <div class="chart-wrapper">
-                        <c-chart type="bar" [data]="chartBarData3Appointments"></c-chart>
-                    </div>
-                </div>
-            </div>
+    <section class="row g-3 operation-grid">
+        <div class="col-md-6 col-xl-3">
+            <div class="operation-card revenue-card"><span class="operation-icon"><i class="fa fa-line-chart"></i></span><span><small>{{util.translate('Delivered value today')}}</small><strong><ng-container *ngIf="util.cside == 'left'">{{util.currecny}} </ng-container>{{todayRevenue | number:'1.2-2'}}<ng-container *ngIf="util.cside == 'right'"> {{util.currecny}}</ng-container></strong><em>{{todayCompletedOrders}} {{util.translate('completed orders')}}</em></span></div>
         </div>
-    </div>
+        <div class="col-md-6 col-xl-3">
+            <button type="button" class="operation-card pending-card" (click)="openPage('orders')"><span class="operation-icon"><i class="fa fa-clock-o"></i></span><span><small>{{util.translate('Orders in progress')}}</small><strong>{{todayPendingOrders}}</strong><em>{{util.translate('Created, accepted or ongoing')}}</em></span><i class="fa fa-chevron-right"></i></button>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <button type="button" class="operation-card express-card" (click)="openPage('orders')"><span class="operation-icon"><i class="fa fa-bolt"></i></span><span><small>{{util.translate('Awaiting express approval')}}</small><strong>{{pendingExpressOrders}}</strong><em>{{util.translate('Instant orders to review')}}</em></span><i class="fa fa-chevron-right"></i></button>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <button type="button" class="operation-card support-card" (click)="openPage('complaints')"><span class="operation-icon"><i class="fa fa-life-ring"></i></span><span><small>{{util.translate('Open support requests')}}</small><strong>{{openComplaints}}</strong><em>{{util.translate('Needs attention')}}</em></span><i class="fa fa-chevron-right"></i></button>
+        </div>
+    </section>
+
+    <section class="row g-3 analytics-grid">
+        <div class="col-md-4"><div class="card chart-card"><div class="card-body"><div class="chart-heading"><div><p>{{util.translate('Today orders')}}</p><small>{{labelToday}}</small></div><span class="chart-key today-key"></span></div><div class="chart-wrapper"><c-chart type="bar" [data]="chartBarDataAppointments" [options]="lineChartOptions"></c-chart></div></div></div></div>
+        <div class="col-md-4"><div class="card chart-card"><div class="card-body"><div class="chart-heading"><div><p>{{util.translate('Weekly orders')}}</p><small>{{labelWeekly}}</small></div><span class="chart-key week-key"></span></div><div class="chart-wrapper"><c-chart type="bar" [data]="chartBarData2Appointments" [options]="lineChartOptions"></c-chart></div></div></div></div>
+        <div class="col-md-4"><div class="card chart-card"><div class="card-body"><div class="chart-heading"><div><p>{{util.translate('Monthly orders')}}</p><small>{{labelMonthly}}</small></div><span class="chart-key month-key"></span></div><div class="chart-wrapper"><c-chart type="bar" [data]="chartBarData3Appointments" [options]="lineChartOptions"></c-chart></div></div></div></div>
+    </section>
 
     <div class="row mb-2">
 
         <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header">
-                    {{util.translate('Recent Orders')}}
+            <div class="card panel-card">
+                <div class="card-header dashboard-card-header">
+                    <div>
+                        <strong>{{util.translate('Recent Orders')}}</strong>
+                        <small>{{util.translate('The latest customer orders across all stores')}}</small>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" (click)="openPage('orders')">{{util.translate('View all')}}</button>
                 </div>
                 <div class="card-body">
 
@@ -118,15 +91,15 @@
                         <label>{{util.translate('No Data Found..')}}</label>
                     </div>
 
-                    <table class="table table-responsive-sm table-hover mb-0">
-                        <thead class="thead-light">
+                    <table class="table table-responsive-sm table-hover mb-0 dashboard-table">
+                        <thead>
                             <tr>
-                                <th scope="col">{{util.translate('Id')}}</th>
-                                <th scope="col">{{util.translate('Username')}}</th>
+                                <th scope="col">{{util.translate('Order')}}</th>
+                                <th scope="col">{{util.translate('Customer')}}</th>
                                 <th scope="col">{{util.translate('Store')}}</th>
-                                <th scope="col">{{util.translate('Date')}}</th>
+                                <th scope="col">{{util.translate('Delivery')}}</th>
+                                <th scope="col">{{util.translate('Status')}}</th>
                                 <th scope="col">{{util.translate('Total')}}</th>
-                                <th scope="col">{{util.translate('Order To')}}</th>
                                 <th scope="col">{{util.translate('Action')}}</th>
                             </tr>
                         </thead>
@@ -137,26 +110,21 @@
                                 </td>
                             </tr>
                             <tr *ngFor="let item of recentOrders;">
-                                <td> {{item.id}} </td>
+                                <td class="order-id"><strong>#{{item.id}}</strong><small>{{item.date_time}}</small></td>
                                 <td>{{item.first_name}} {{item.last_name}}</td>
-                                <td> <label> <span *ngFor="let store of item.storeInfo;let i = index"> {{store.name}}
-                                            {{i == item.storeInfo.length -1 ? '' : ',&nbsp;' }} </span> </label>
-                                </td>
-                                <td>{{item.date_time}}</td>
+                                <td class="store-cell">{{getStoreNames(item.storeInfo) || '—'}}</td>
+                                <td><span class="delivery-badge" [ngClass]="item.delivery_type === 'instant' ? 'instant' : 'scheduled'">{{deliveryLabel(item)}}</span></td>
+                                <td><span class="order-status-badge" [ngClass]="'status-' + orderStatus(item)">{{orderStatusLabel(item)}}</span></td>
                                 <td>
                                     <span *ngIf="util.cside =='left'">
-                                        {{util.currecny}} {{item.grand_total}}
+                                        {{util.currecny}} {{item.grand_total | number:'1.2-2'}}
                                     </span>
                                     <span *ngIf="util.cside =='right'">
-                                        {{item.grand_total}} {{util.currecny}}
+                                        {{item.grand_total | number:'1.2-2'}} {{util.currecny}}
                                     </span>
                                 </td>
-                                <td> {{item.order_to}} </td>
                                 <td>
-                                    <c-badge color="primary" class="me-1 badge bg-info"
-                                        (click)="viewOrderInfo(item.id)">
-                                        {{util.translate('View')}}
-                                    </c-badge>
+                                    <button type="button" class="btn btn-link btn-sm table-action" (click)="viewOrderInfo(item.id)">{{util.translate('View')}}</button>
 
                                 </td>
                             </tr>
@@ -170,9 +138,13 @@
     <div class="row mb-2">
 
         <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header">
-                    {{util.translate('Recent Users')}}
+            <div class="card panel-card">
+                <div class="card-header dashboard-card-header">
+                    <div>
+                        <strong>{{util.translate('Recent Users')}}</strong>
+                        <small>{{util.translate('Most recently registered customers')}}</small>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" (click)="openPage('users')">{{util.translate('View all')}}</button>
                 </div>
                 <div class="card-body">
 
@@ -180,8 +152,8 @@
                         <label>{{util.translate('No Data Found..')}}</label>
                     </div>
 
-                    <table class="table table-responsive-sm table-hover mb-0">
-                        <thead class="thead-light">
+                    <table class="table table-responsive-sm table-hover mb-0 dashboard-table">
+                        <thead>
                             <tr>
                                 <th scope="col">{{util.translate('Cover')}}</th>
                                 <th scope="col">{{util.translate('Name')}}</th>
@@ -228,9 +200,13 @@
     <div class="row mb-2">
 
         <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header">
-                    {{util.translate('This months complaints')}}
+            <div class="card panel-card">
+                <div class="card-header dashboard-card-header">
+                    <div>
+                        <strong>{{util.translate('This months complaints')}}</strong>
+                        <small>{{openComplaints}} {{util.translate('currently open')}}</small>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" (click)="openPage('complaints')">{{util.translate('Manage')}}</button>
                 </div>
                 <div class="card-body">
 
@@ -238,8 +214,8 @@
                         <label>{{util.translate('No Data Found..')}}</label>
                     </div>
 
-                    <table class="table table-responsive-sm table-hover mb-0">
-                        <thead class="thead-light">
+                    <table class="table table-responsive-sm table-hover mb-0 dashboard-table">
+                        <thead>
                             <tr>
                                 <th scope="col">{{util.translate('ID')}}</th>
                                 <th scope="col">{{util.translate('Order Id')}}</th>

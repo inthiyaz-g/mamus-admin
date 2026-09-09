@@ -33,36 +33,48 @@ export class DashboardComponent implements OnInit {
   order: any = 0;
   stores: any = 0;
   products: any = 0;
+  todayOrders: number = 0;
+  todayCompletedOrders: number = 0;
+  todayCancelledOrders: number = 0;
+  todayPendingOrders: number = 0;
+  todayRevenue: number = 0;
+  pendingExpressOrders: number = 0;
+  openComplaints: number = 0;
+  isLoading: boolean = false;
+  lastUpdated: Date | null = null;
 
-  chartBarDataAppointments = {
-    labels: [this.util.translate('Today')],
+  chartBarDataAppointments: any = {
+    labels: [],
     datasets: [
       {
         label: this.util.translate('Today'),
-        backgroundColor: '#f87979',
-        data: [0]
+        backgroundColor: '#e5313d',
+        borderRadius: 8,
+        data: []
       }
     ]
   };
 
-  chartBarData2Appointments = {
-    labels: [this.util.translate('Weekly')],
+  chartBarData2Appointments: any = {
+    labels: [],
     datasets: [
       {
         label: this.util.translate('Weekly'),
-        backgroundColor: '#f87979',
-        data: [0]
+        backgroundColor: '#276ef1',
+        borderRadius: 8,
+        data: []
       }
     ]
   };
 
-  chartBarData3Appointments = {
-    labels: [this.util.translate('Monthly')],
+  chartBarData3Appointments: any = {
+    labels: [],
     datasets: [
       {
         label: this.util.translate('Monthly'),
-        backgroundColor: '#f87979',
-        data: [0]
+        backgroundColor: '#7c3aed',
+        borderRadius: 8,
+        data: []
       }
     ]
   };
@@ -118,8 +130,9 @@ export class DashboardComponent implements OnInit {
 
   getHome() {
     this.dummy = Array(5);
+    this.isLoading = true;
+    this.resetCharts();
     this.api.get_private('v1/home/getAdminDashboard').then((data: any) => {
-      console.log(data);
       this.dummy = [];
       if (data && data.status && data.status == 200) {
         this.users = data.data.users;
@@ -128,58 +141,121 @@ export class DashboardComponent implements OnInit {
         this.products = data.data.products;
 
 
-        if (data && data.data && data.data.today && data.data.today.label) {
-          console.log('have today charts');
-          data.data.today.label.forEach((element: any) => {
-            this.chartBarDataAppointments.labels.push(element);
-          });
-          data.data.today.data.forEach((element: any) => {
-            this.chartBarDataAppointments.datasets[0].data.push(element);
-          });
-        }
+        this.setChartData(this.chartBarDataAppointments, data.data.today);
 
         this.labelToday = data.data.todayLabel;
 
-        if (data && data.data && data.data.week && data.data.week.label) {
-          console.log('have week charts');
-          data.data.week.label.forEach((element: any) => {
-            this.chartBarData2Appointments.labels.push(element);
-          });
-          data.data.week.data.forEach((element: any) => {
-            this.chartBarData2Appointments.datasets[0].data.push(element);
-          });
-        }
+        this.setChartData(this.chartBarData2Appointments, data.data.week);
         this.labelWeekly = data.data.weekLabel;
 
-        if (data && data.data && data.data.month && data.data.month.label) {
-          console.log('have month charts');
-          data.data.month.label.forEach((element: any) => {
-            this.chartBarData3Appointments.labels.push(element);
-          });
-          data.data.month.data.forEach((element: any) => {
-            this.chartBarData3Appointments.datasets[0].data.push(element);
-          });
-        }
-
-        console.log('Today ->', this.chartBarDataAppointments);
-        console.log('Week ->', this.chartBarData2Appointments);
-        console.log('Month ->', this.chartBarData3Appointments);
+        this.setChartData(this.chartBarData3Appointments, data.data.month);
         this.labelMonthly = data.data.monthLabel;
 
         this.recentUsers = data.data.recentUsers;
         this.recentOrders = data.data.recentOrders;
 
         this.complaints = data.data.complaints;
+        const summary = data.data.todayOrderSummary || {};
+        this.todayOrders = Number(summary.total || 0);
+        this.todayCompletedOrders = Number(summary.completed || 0);
+        this.todayCancelledOrders = Number(summary.cancelled || 0);
+        this.todayPendingOrders = Number(summary.pending || 0);
+        this.todayRevenue = Number(summary.revenue || 0);
+        this.pendingExpressOrders = Number(data.data.pendingExpressOrders || 0);
+        this.openComplaints = Number(data.data.openComplaints || 0);
+        this.lastUpdated = new Date();
       }
+      this.isLoading = false;
     }, error => {
-      console.log(error);
       this.dummy = [];
+      this.isLoading = false;
       this.util.apiErrorHandler(error);
     }).catch(error => {
-      console.log(error);
       this.dummy = [];
+      this.isLoading = false;
       this.util.apiErrorHandler(error);
     });
+  }
+
+  refreshDashboard() {
+    if (!this.isLoading) {
+      this.getHome();
+    }
+  }
+
+  deliveryLabel(order: any): string {
+    if (order?.delivery_type === 'instant') {
+      return this.util.translate('Instant');
+    }
+
+    return this.util.translate('Scheduled');
+  }
+
+  orderStatus(order: any): string {
+    const statuses = this.storeStatuses(order);
+
+    if (statuses.includes('refund') || statuses.includes('refunded')) return 'refunded';
+    if (statuses.includes('rejected')) return 'rejected';
+    if (statuses.includes('cancelled') || statuses.includes('canceled')) return 'cancelled';
+    if (statuses.length > 0 && statuses.every((status: string) => status === 'delivered')) return 'delivered';
+    if (statuses.includes('ongoing')) return 'ongoing';
+    if (statuses.includes('accepted')) return 'accepted';
+
+    return 'created';
+  }
+
+  orderStatusLabel(order: any): string {
+    const labels: { [key: string]: string } = {
+      accepted: 'Accepted',
+      cancelled: 'Cancelled',
+      created: 'Created',
+      delivered: 'Delivered',
+      ongoing: 'Ongoing',
+      refunded: 'Refunded',
+      rejected: 'Rejected',
+    };
+
+    return this.util.translate(labels[this.orderStatus(order)] || 'Created');
+  }
+
+  getStoreNames(storeInfo: any[]): string {
+    return (storeInfo || []).map((store: any) => store.name).filter(Boolean).join(', ');
+  }
+
+  private resetCharts() {
+    this.chartBarDataAppointments = this.createChartData(this.util.translate('Today'), '#e5313d');
+    this.chartBarData2Appointments = this.createChartData(this.util.translate('Weekly'), '#276ef1');
+    this.chartBarData3Appointments = this.createChartData(this.util.translate('Monthly'), '#7c3aed');
+  }
+
+  private createChartData(label: string, color: string) {
+    return {
+      labels: [] as any[],
+      datasets: [{ label, backgroundColor: color, borderRadius: 8, data: [] as any[] }]
+    };
+  }
+
+  private setChartData(chart: any, source: any) {
+    chart.labels = Array.isArray(source?.label) ? source.label : [];
+    chart.datasets[0].data = Array.isArray(source?.data) ? source.data : [];
+  }
+
+  private storeStatuses(order: any): string[] {
+    const rawStatus = order?.status;
+    if (Array.isArray(rawStatus)) {
+      return rawStatus.map((item: any) => String(item?.status || '').toLowerCase()).filter(Boolean);
+    }
+
+    if (typeof rawStatus !== 'string' || rawStatus.trim() === '') return [];
+
+    try {
+      const parsed = JSON.parse(rawStatus);
+      return Array.isArray(parsed)
+        ? parsed.map((item: any) => String(item?.status || '').toLowerCase()).filter(Boolean)
+        : [];
+    } catch {
+      return [rawStatus.toLowerCase()];
+    }
   }
 
   statusUpdate(item: any) {

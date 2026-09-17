@@ -7,12 +7,71 @@
   Copyright and Good Faith Purchasers © 2024-present initappz.
 -->
 <div class="animated fadeIn">
+    <section class="card product-create" *ngIf="creatingProduct">
+      <div class="card-header"><strong>Add product to a store / restaurant</strong></div>
+      <form class="card-body" (ngSubmit)="saveNewProduct()">
+        <p>Choose the store and configure pricing, sizes, images and availability.</p>
+        <div class="alert alert-danger" role="alert" *ngIf="productError">{{productError}}</div>
+        <div class="row">
+          <label class="col-md-6 form-group">Store / Restaurant
+            <select class="form-control" name="productStore" [(ngModel)]="newProduct.store_id" required><option value="" disabled>Select store</option><option *ngFor="let store of productStores" [value]="store.uid">{{store.name}} · #{{store.uid}}</option></select>
+          </label>
+          <label class="col-md-6 form-group">Product name<input class="form-control" name="productName" [(ngModel)]="newProduct.name" maxlength="200" required></label>
+          <label class="col-md-6 form-group">Category<select class="form-control" name="productCategory" [(ngModel)]="newProduct.cate_id" (change)="productCategoryChanged()" required><option value="" disabled>Select category</option><option *ngFor="let category of productCategories" [value]="category.id">{{category.name}}</option></select></label>
+          <label class="col-md-6 form-group">Subcategory<select class="form-control" name="productSubcategory" [(ngModel)]="newProduct.sub_cate_id" required><option value="" disabled>Select subcategory</option><option *ngFor="let sub of productSubcategories" [value]="sub.id">{{sub.name}}</option></select></label>
+          <label class="col-md-4 form-group">Original price<input class="form-control" type="number" min="0.01" step="0.01" name="productPrice" [(ngModel)]="newProduct.original_price" (ngModelChange)="calculateProductPrice()" required></label>
+          <label class="col-md-4 form-group">Discount %<input class="form-control" type="number" min="0" max="100" step="0.01" name="productDiscount" [(ngModel)]="newProduct.discount" (ngModelChange)="calculateProductPrice()"></label>
+          <label class="col-md-4 form-group">Selling price<input class="form-control" name="productSellPrice" [ngModel]="newProduct.sell_price" readonly><small>Calculated from original price and discount.</small></label>
+          <label class="col-md-4 form-group">Delivery type<select class="form-control" name="productDelivery" [(ngModel)]="newProduct.delivery_type"><option value="scheduled">Scheduled</option><option value="instant">Instant</option></select></label>
+          <label class="col-md-4 form-group">Product kind<select class="form-control" name="productKind" [(ngModel)]="newProduct.kind"><option [ngValue]="1">Veg</option><option [ngValue]="0">Non-veg</option></select></label>
+          <label class="col-md-6 form-group">Product image<input class="form-control" type="file" accept="image/jpeg,image/png,image/webp" (change)="uploadProductImage($event)" [disabled]="uploadingProduct || savingProduct"><small *ngIf="uploadingProduct">Uploading…</small><img *ngIf="newProduct.cover" [src]="api.imageUrl + newProduct.cover" alt="Product preview" style="display:block;width:120px;height:120px;object-fit:contain;margin-top:10px;border-radius:12px"></label>
+          <label class="col-md-6 form-group">Description<textarea class="form-control" name="productDescription" [(ngModel)]="newProduct.descriptions" rows="3"></textarea></label>
+        </div>
+        <h5>Availability & limits</h5>
+        <div class="row">
+          <label class="col-md-4 form-group" *ngFor="let flag of productFlags">{{flag.label}}<select class="form-control" [name]="flag.key" [(ngModel)]="newProduct[flag.key]"><option [ngValue]="1">Yes</option><option [ngValue]="0">No</option></select></label>
+          <label class="col-md-6 form-group" *ngIf="newProduct.allow_only_one_per_cart == 1">One-item limit message<input class="form-control" name="limitMessage" [(ngModel)]="newProduct.one_per_cart_message"></label>
+        </div>
+        <h5>Quantity & units</h5>
+        <div class="row">
+          <div class="col-md-4 form-group" *ngFor="let unit of productUnits">
+            <label [for]="'unit-' + unit">Enable {{unit | uppercase}}</label>
+            <select class="form-control" [id]="'unit-' + unit" [name]="'have_' + unit" [(ngModel)]="newProduct['have_' + unit]"><option [ngValue]="1">Yes</option><option [ngValue]="0">No</option></select>
+            <input *ngIf="newProduct['have_' + unit] == 1" class="form-control mt-2" type="number" min="0.001" step="any" [name]="unit" [(ngModel)]="newProduct[unit]" [attr.aria-label]="unit + ' quantity'" required>
+          </div>
+        </div>
+        <h5>Sizes / variations</h5>
+        <label class="form-group">Multiple sizes<select class="form-control" name="size" [(ngModel)]="newProduct.size"><option [ngValue]="0">No</option><option [ngValue]="1">Yes</option></select></label>
+        <div *ngIf="newProduct.size == 1" class="mb-4">
+          <div class="row" *ngFor="let variant of productVariants; let i = index">
+            <label class="col-md-4 form-group">Size name<input class="form-control" [name]="'variantTitle' + i" [(ngModel)]="variant.title" placeholder="e.g. 1 Liter" required></label>
+            <label class="col-md-3 form-group">Price<input class="form-control" type="number" min="0.01" step="0.01" [name]="'variantPrice' + i" [(ngModel)]="variant.price" required></label>
+            <label class="col-md-3 form-group">Sale price (0 = no discount)<input class="form-control" type="number" min="0" step="0.01" [name]="'variantDiscount' + i" [(ngModel)]="variant.discount"></label>
+            <div class="col-md-2"><button class="btn btn-outline-danger" type="button" (click)="productVariants.splice(i, 1)">Remove</button></div>
+          </div>
+          <button class="btn btn-outline-primary" type="button" (click)="addProductVariant()">Add size</button>
+        </div>
+        <h5>Product information</h5>
+        <div class="row">
+          <label class="col-md-6 form-group">Key features<textarea class="form-control" rows="3" name="features" [(ngModel)]="newProduct.key_features"></textarea></label>
+          <label class="col-md-6 form-group">Disclaimer<textarea class="form-control" rows="3" name="disclaimer" [(ngModel)]="newProduct.disclaimer"></textarea></label>
+        </div>
+        <h5>Additional images (up to 6)</h5>
+        <input class="form-control mb-3" type="file" accept="image/jpeg,image/png,image/webp" (change)="uploadProductImage($event, true)" [disabled]="uploadingProduct || savingProduct || productGallery.length >= 6" aria-label="Upload additional product image">
+        <div class="d-flex flex-wrap mb-4">
+          <div class="mr-3" *ngFor="let image of productGallery; let i = index"><img [src]="api.imageUrl + image" alt="Additional product image" style="width:90px;height:90px;object-fit:contain"><button type="button" class="btn btn-sm btn-light d-block" (click)="productGallery.splice(i, 1)">Remove</button></div>
+        </div>
+        <button class="btn btn-danger" type="submit" [disabled]="savingProduct || uploadingProduct">{{savingProduct ? 'Saving…' : 'Create product'}}</button>
+        <button class="btn btn-light ml-2" type="button" (click)="creatingProduct = false" [disabled]="savingProduct || uploadingProduct">Cancel</button>
+      </form>
+    </section>
     <div class="row">
         <div class="col-sm-12 col-md-12">
             <div class="card">
                 <div class="card-header">
                     {{util.translate('Products')}}
                     <div class="card-header-actions">
+                        <button type="button" (click)="addNew()" class="btn btn-sm btn-danger" [disabled]="creatingProduct">Add product</button>
                         <button type="submit" (click)="importCSV()" class="btn btn-sm btn-warning"
                             style="float: right;margin: 0px 5px;">
                             {{util.translate('Bulk CSV Upload')}}

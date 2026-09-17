@@ -19,6 +19,11 @@
                     <div class="row">
                         <div class="col-sm-12">
                             <div class="form-group">
+                                <label for="customer-app-version">{{util.translate('Customer app version')}}</label>
+                                <input id="customer-app-version" class="form-control" type="text" maxlength="32" placeholder="2.2.1" [(ngModel)]="appVersion" [ngModelOptions]="{standalone: true}">
+                                <small class="text-muted">Shown on the customer Account page. This label does not update the installed app build.</small>
+                            </div>
+                            <div class="form-group">
                                 <label class="modal_lbl">{{util.translate('Status')}}</label>
                                 <select class="form-control" [ngModelOptions]="{standalone: true}"
                                     [(ngModel)]="appStatus">
@@ -34,6 +39,19 @@
                                     [placeholder]="util.translate('Message')"></textarea>
                             </div>
 
+                            <button type="button" class="btn btn-success" (click)="save()">
+                                {{util.translate('Save app and delivery settings')}}</button>
+                            <section class="delivery-settings mt-4">
+                                <h4>Delivery options &amp; charges</h4>
+                                <p>Control availability and the charge per order. Changes apply to new orders; existing orders retain their charges.</p>
+                                <div class="card p-3 mb-3" *ngFor="let row of deliveryRows">
+                                    <label><input type="checkbox" [(ngModel)]="deliveryOptions[row.key].enabled" [ngModelOptions]="{standalone: true}"> {{row.label}}</label>
+                                    <label [for]="'charge-' + row.key">Delivery charge (₹)</label>
+                                    <input class="form-control" type="number" min="0" max="100000" step="0.01" [id]="'charge-' + row.key" [(ngModel)]="deliveryOptions[row.key].charge" [ngModelOptions]="{standalone: true}">
+                                    <label *ngIf="row.key !== 'instant'" class="mt-2"><input type="checkbox" [ngModel]="deliveryOptions[row.key].for_instant !== false" (ngModelChange)="deliveryOptions[row.key].for_instant = $event" [ngModelOptions]="{standalone: true}"> Also offer this option for Instant products</label>
+                                    <small>Set ₹0 for free delivery. Turn off to make this option unavailable.</small>
+                                </div>
+                            </section>
                             <button type="button" class="btn btn-success" (click)="save()">
                                 {{util.translate('Submit')}}</button>
                         </div>

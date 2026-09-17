@@ -26,6 +26,114 @@ export class ProductsComponent implements OnInit {
   inputString: any = '';
   cities: any[] = [];
   selectedCities: any = '';
+  creatingProduct = false;
+  savingProduct = false;
+  uploadingProduct = false;
+  productError = '';
+  productStores: any[] = [];
+  productCategories: any[] = [];
+  productSubcategories: any[] = [];
+  newProduct: any = {};
+  productUnits = ['gram', 'kg', 'liter', 'ml', 'pcs'];
+  productFlags = [
+    { key: 'status', label: 'Active product' }, { key: 'in_stoke', label: 'In stock' },
+    { key: 'in_home', label: 'Show on home' }, { key: 'in_offer', label: 'Show in offers' },
+    { key: 'is_single', label: 'Single product' }, { key: 'allow_only_one_per_cart', label: 'Only one per cart' }
+  ];
+  productVariants: any[] = [];
+  productGallery: string[] = [];
+
+  calculateProductPrice() {
+    this.newProduct.sell_price = Number((Number(this.newProduct.original_price || 0) * (1 - Number(this.newProduct.discount || 0) / 100)).toFixed(2));
+  }
+
+  addProductVariant() { this.productVariants.push({ title: '', price: null, discount: 0 }); }
+
+  async openCreateProduct() {
+    this.creatingProduct = true;
+    this.productError = '';
+    this.newProduct = { store_id: '', cate_id: '', sub_cate_id: '', name: '', cover: '', original_price: null, delivery_type: 'scheduled', kind: 1, descriptions: '' };
+    Object.assign(this.newProduct, { discount: 0, sell_price: 0, size: 0, status: 1, in_stoke: 1,
+      in_home: 0, in_offer: 0, is_single: 0, allow_only_one_per_cart: 0, one_per_cart_message: '',
+      key_features: '', disclaimer: '', exp_date: '2030-12-31', type_of: 1 });
+    this.productUnits.forEach(unit => { this.newProduct['have_' + unit] = unit === 'pcs' ? 1 : 0; this.newProduct[unit] = unit === 'pcs' ? 1 : 0; });
+    this.productVariants = [];
+    this.productGallery = [];
+    this.productSubcategories = [];
+    try {
+      const [stores, categories]: any[] = await Promise.all([
+        this.api.get_private('v1/store/getAll'), this.api.get_private('v1/category/getAll')
+      ]);
+      this.productStores = stores.data || [];
+      this.productCategories = categories.data || [];
+    } catch { this.productError = 'Unable to load stores and categories. Please try again.'; }
+  }
+
+  async productCategoryChanged() {
+    this.newProduct.sub_cate_id = '';
+    this.productSubcategories = [];
+    const category = this.newProduct.cate_id;
+    try {
+      const result: any = await this.api.post_private('v1/subCategories/getFromCateId', { id: category });
+      if (category === this.newProduct.cate_id) this.productSubcategories = result.data || [];
+    } catch { this.productError = 'Unable to load subcategories.'; }
+  }
+
+  uploadProductImage(event: any, gallery = false) {
+    if (this.uploadingProduct || this.savingProduct) return;
+    if (gallery && this.productGallery.length >= 6) { this.productError = 'You can add up to six additional images.'; return; }
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      this.productError = 'Choose a JPG, PNG or WebP image smaller than 5 MB.'; return;
+    }
+    this.uploadingProduct = true;
+    this.productError = '';
+    this.api.uploadFile([file]).subscribe((result: any) => {
+      this.uploadingProduct = false;
+      if (result?.data?.image_name) {
+        if (gallery) this.productGallery.push(result.data.image_name);
+        else this.newProduct.cover = result.data.image_name;
+      }
+      else this.productError = 'Image upload failed. Please try again.';
+    }, () => { this.uploadingProduct = false; this.productError = 'Image upload failed. Please try again.'; });
+  }
+
+  async saveNewProduct() {
+    if (this.savingProduct || this.uploadingProduct) return;
+    const p = this.newProduct;
+    if (!p.store_id || !p.cate_id || !p.sub_cate_id || !p.name?.trim() || !p.cover || !(Number(p.original_price) > 0)) {
+      this.productError = 'Select a store, category and subcategory, and enter a name, image and valid price.'; return;
+    }
+    if (Number(p.discount) < 0 || Number(p.discount) > 100 || !Number.isFinite(Number(p.discount))) {
+      this.productError = 'Discount must be between 0 and 100%.'; return;
+    }
+    if (this.productUnits.some(unit => p['have_' + unit] == 1 && !(Number(p[unit]) > 0))) {
+      this.productError = 'Enter a positive quantity for each enabled unit.'; return;
+    }
+    if (p.size == 1 && (!this.productVariants.length || this.productVariants.some(v => !v.title?.trim() || !(Number(v.price) > 0) || Number(v.discount) < 0 || Number(v.discount) > Number(v.price)))) {
+      this.productError = 'Add at least one size with a name, positive price and sale price between zero and its original price.'; return;
+    }
+    this.calculateProductPrice();
+    this.savingProduct = true;
+    this.productError = '';
+    try {
+      const price = Number(Number(p.original_price).toFixed(2));
+      const result: any = await this.api.post_private('v1/products/create', {
+        ...p, name: p.name.trim(), original_price: price, exp_date: '2030-12-31',
+        images: JSON.stringify(this.productGallery),
+        variations: JSON.stringify(p.size == 1 ? [{ title: 'size', type: 'radio', items: this.productVariants.map(v => ({ title: v.title.trim(), price: Number(v.price), discount: Number(v.discount || 0) })) }] : []),
+        rating: 0, total_rating: 0,
+        ...Object.fromEntries(this.productUnits.map(unit => [unit, p['have_' + unit] == 1 ? Number(p[unit]) : 0]))
+      });
+      if (result?.status !== 200 || !result?.success) throw new Error('Unable to create product.');
+      this.creatingProduct = false;
+      this.util.success('Product added to the selected store.');
+      this.page = 1;
+      this.getList();
+    } catch (error: any) { this.productError = error?.error?.message || error.message || 'Unable to create product.'; }
+    finally { this.savingProduct = false; }
+  }
   constructor(
     public util: UtilService,
     public api: ApiService,
@@ -221,7 +329,7 @@ export class ProductsComponent implements OnInit {
   }
 
   addNew() {
-    this.router.navigate(['manage-store']);
+    this.openCreateProduct();
   }
 
   exportCSV() {
